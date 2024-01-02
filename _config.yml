@@ -84,7 +84,7 @@ author:
   avatar           : "profile.png"
   bio              : "Your biography for the left-hand sidebar"
   location         : "San Francisco CA, USA"
-  employer         : "UC Berkeley, Lawrence Berkeley National Lab, ICSI"
+  employer         : "UC Berkeley, Berkeley Lab, ICSI"
   googlescholar    : "https://scholar.google.com/citations?user=TKfCCqQAAAAJ&hl=en"
   email            : "khegazy@berkeley.edu"
   researchgate     :  # example: "https://www.researchgate.net/profile/yourprofile"
@@ -95,13 +95,13 @@ author:
   flickr           :
   facebook         :
   foursquare       :
-  github           : "https://github.com/khegazy"
+  github           : "khegazy"
   google_plus      :
   keybase          :
   instagram        :
   impactstory      : #"https://profiles.impactstory.org/u/xxxx-xxxx-xxxx-xxxx"
   lastfm           :
-  linkedin         :
+  linkedin         : "khhegazy"
   orcid            : 
   pinterest        :
   soundcloud       :
