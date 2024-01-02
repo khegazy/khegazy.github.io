@@ -1,12 +1,17 @@
 ---
 permalink: /
-title: "Biography"
+title: "Research Interests"
 excerpt: "About me"
 author_profile: true
 redirect_from: 
   - /about/
   - /about.html
 ---
+
+adsfadfadsf
+
+Biography
+====
 
 I am a postdoc researcher investigating the intersection of Physics, Chemistry, and AI with [Michael Mahoney](https://www.stat.berkeley.edu/~mmahoney/) and [Benjamin Erichson](https://www.benerichson.com/). 
 I have a joint appointment at the [Berkeley Statistics department](https://statistics.berkeley.edu/), [Lawrence Berkeley National Lab](https://www.lbl.gov/), and the [International Computer Science Institute](https://www.icsi.berkeley.edu/icsi/). 
