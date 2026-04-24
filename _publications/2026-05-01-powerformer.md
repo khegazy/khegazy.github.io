@@ -10,6 +10,7 @@ venue: "<i>AISTATS</i> 2026"
 authors: "K. Hegazy, M. W. Mahoney, N. B. Erichson"
 citation: "K. Hegazy, M. W. Mahoney, N. B. Erichson. (2026). &quot;Powerformer: A Transformer with Weighted Causal Attention for Time-Series Forecasting.&quot; <i>AISTATS</i>."
 paperurl: ""
+arxivurl: ""
 codeurl: ""
 blogurl: ""
 ---

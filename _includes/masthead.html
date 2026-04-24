@@ -1,9 +1,26 @@
 {% include base_path %}
 
 <style>
-/* Layout: social icons on the left, nav links on the right.
-   Keeps the theme's `display: table` so the greedy-nav JS stays happy —
-   uses a full-width spacer cell to push subsequent items to the right. */
+/* ------------------------------------------------------------------
+   Sticky masthead — keeps the full nav (social icons + nav links)
+   pinned to the top as the page scrolls.
+   ------------------------------------------------------------------ */
+.masthead {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #fff;
+  -webkit-backdrop-filter: saturate(180%) blur(8px);
+          backdrop-filter: saturate(180%) blur(8px);
+}
+
+/* ------------------------------------------------------------------
+   Layout: social icons on the left, nav links on the right.
+   Uses the theme's native display: table with a full-width spacer
+   cell to right-align the navigation items — this keeps the
+   greedy-nav overflow JS happy.
+   ------------------------------------------------------------------ */
 .masthead .greedy-nav .visible-links .masthead__menu-item--spacer {
   width: 100%;
   pointer-events: none;
@@ -12,8 +29,7 @@
   display: none;
 }
 
-/* Un-bold the first (leftmost) item — the theme bolds it assuming it's a
-   site title. We put a social icon there instead. */
+/* Un-bold the first cell — theme bolds it assuming it is a site title. */
 .masthead .greedy-nav .visible-links li:first-child { font-weight: normal; }
 .masthead .greedy-nav .visible-links li:first-child a { margin-left: 0; }
 
@@ -26,9 +42,23 @@
 .masthead__menu-item--social a:before { display: none !important; }
 
 @media (max-width: 600px) {
-  .masthead .greedy-nav .visible-links .masthead__menu-item--spacer {
-    display: none;
-  }
+  .masthead .greedy-nav .visible-links .masthead__menu-item--spacer { display: none; }
+}
+
+/* ------------------------------------------------------------------
+   Sitewide scroll progress bar — anchored to the bottom of the
+   sticky masthead, grows with page scroll position.
+   ------------------------------------------------------------------ */
+#scroll-progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;                 /* sit on top of the theme's border-bottom */
+  height: 3px;
+  width: 0;
+  background: #4b6584;          /* slate-indigo; adjust to taste */
+  z-index: 101;
+  transition: width 0.08s linear;
+  will-change: width;
 }
 </style>
 
@@ -69,4 +99,29 @@
       </nav>
     </div>
   </div>
+  <div id="scroll-progress" aria-hidden="true"></div>
 </div>
+
+<script>
+(function () {
+  var bar = document.getElementById('scroll-progress');
+  if (!bar) return;
+  function update() {
+    var doc = document.documentElement;
+    var scrollTop = window.pageYOffset || doc.scrollTop || 0;
+    var maxScroll = (doc.scrollHeight || document.body.scrollHeight) - (window.innerHeight || doc.clientHeight);
+    var pct = maxScroll > 0 ? Math.min(100, Math.max(0, (scrollTop / maxScroll) * 100)) : 0;
+    bar.style.width = pct + '%';
+  }
+  var ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      window.requestAnimationFrame(function () { update(); ticking = false; });
+      ticking = true;
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  update();
+})();
+</script>

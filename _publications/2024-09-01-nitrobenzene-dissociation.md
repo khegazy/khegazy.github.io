@@ -10,6 +10,7 @@ venue: "<i>J. Phys. B</i>, 57, 195101 (2024)"
 authors: "K. Hegazy, et al."
 citation: "K. Hegazy, et al. (2024). &quot;Tracking Dissociation Pathways of Nitrobenzene via MeV Ultrafast Electron Diffraction.&quot; <i>J. Phys. B</i>, 57, 195101."
 paperurl: ""
+arxivurl: ""
 codeurl: ""
 blogurl: ""
 ---

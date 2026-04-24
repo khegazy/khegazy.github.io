@@ -258,6 +258,44 @@ class MastheadTests(unittest.TestCase):
         self.assertIn("site.data.navigation.main", self.text,
                       "masthead.html should iterate site.data.navigation.main")
 
+    def test_masthead_is_sticky(self):
+        # The masthead should pin to the top as the page scrolls
+        # (both the vendor-prefixed and bare form count as sticky).
+        self.assertRegex(
+            self.text,
+            r"\.masthead\s*\{[^}]*position:\s*(?:-webkit-)?sticky",
+            "masthead.html should have position: sticky on .masthead",
+        )
+        self.assertRegex(
+            self.text,
+            r"\.masthead\s*\{[^}]*top:\s*0",
+            "masthead.html sticky .masthead should set top: 0",
+        )
+
+    def test_scroll_progress_bar_present(self):
+        # The #scroll-progress element lives inside the sticky masthead so
+        # it sits on top of the nav's border and sticks with it.
+        self.assertIn('id="scroll-progress"', self.text,
+                      "masthead.html should include the #scroll-progress bar element")
+        self.assertRegex(
+            self.text,
+            r"#scroll-progress\s*\{[^}]*position:\s*absolute",
+            "masthead.html #scroll-progress should be position: absolute",
+        )
+        self.assertRegex(
+            self.text,
+            r"#scroll-progress\s*\{[^}]*height:\s*\d",
+            "masthead.html #scroll-progress should declare a height",
+        )
+
+    def test_scroll_progress_has_update_script(self):
+        # The progress bar needs a scroll listener that updates its width.
+        self.assertIn("scroll-progress", self.text)
+        self.assertIn("addEventListener('scroll'", self.text,
+                      "masthead.html should attach a scroll listener for the progress bar")
+        self.assertIn("requestAnimationFrame", self.text,
+                      "masthead.html scroll listener should be rAF-debounced")
+
 
 class AboutPageTests(unittest.TestCase):
     def setUp(self):
@@ -268,9 +306,55 @@ class AboutPageTests(unittest.TestCase):
         self.assertEqual(self.meta.get("permalink"), "/",
                          "about.md permalink should be '/'")
 
-    def test_author_profile_enabled(self):
-        self.assertTrue(self.meta.get("author_profile"),
-                        "about.md should have author_profile: true so sidebar renders")
+    def test_author_profile_disabled(self):
+        # The homepage was redesigned: the bio + photo now live inline in a
+        # scrolling hero section (not a sticky sidebar). The sidebar should
+        # therefore be OFF on the homepage.
+        self.assertFalse(
+            self.meta.get("author_profile"),
+            "about.md should have author_profile: false — the homepage uses "
+            "an inline hero section instead of the sticky author sidebar",
+        )
+
+    def test_wide_page_class_set(self):
+        # With the sidebar off, the content area should stretch to full width.
+        classes = self.meta.get("classes")
+        if isinstance(classes, list):
+            self.assertIn("wide-page", classes,
+                          "about.md should include 'wide-page' in classes: list")
+        else:
+            self.assertEqual(classes, "wide-page",
+                             "about.md classes: should be 'wide-page' (full-width layout)")
+
+    def test_hero_section_present(self):
+        self.assertRegex(
+            self.body,
+            r'<section\s+class="hero"',
+            "about.md should have a <section class='hero'> containing bio + photo",
+        )
+
+    def test_hero_image_references_profile(self):
+        self.assertRegex(
+            self.body,
+            r'<img\s+class="hero__image"[^>]*profile\.png',
+            "about.md hero should include an <img class='hero__image'> pointing at profile.png",
+        )
+
+    def test_hero_has_name_and_subtitle(self):
+        self.assertIn('class="hero__name"', self.body,
+                      "about.md hero should render a .hero__name element")
+        self.assertIn('class="hero__subtitle"', self.body,
+                      "about.md hero should render a .hero__subtitle element (role/affiliations)")
+
+    def test_hero_bio_uses_markdown_processing(self):
+        # hero__bio has markdown="1" so inline links render — regression
+        # guard against accidentally setting markdown="0" which would break
+        # the collaborator links.
+        self.assertRegex(
+            self.body,
+            r'class="hero__bio"[^>]*markdown="1"',
+            "about.md .hero__bio should have markdown=\"1\" so inline links render",
+        )
 
     def test_required_sections(self):
         for heading in ("Selected Publications", "Selected Blogs",
@@ -326,6 +410,42 @@ class AboutPageTests(unittest.TestCase):
             r'<h4\s+class="pub-title"><a\s+href="\{\{\s*pub_href\s*\}\}">',
             "the pub-title <h4> should wrap an <a> pointing at pub_href",
         )
+
+    def test_pub_card_renders_action_buttons(self):
+        # Each featured pub card should conditionally render
+        # arXiv / Paper / Code / Blog buttons from the matching URL fields.
+        for label, field in (
+            ("arXiv", "arxivurl"),
+            ("Paper", "paperurl"),
+            ("Code", "codeurl"),
+            ("Blog", "blogurl"),
+        ):
+            with self.subTest(action=label):
+                self.assertRegex(
+                    self.body,
+                    rf'pub\.{field}.*{label}',
+                    f"about.md should render a '{label}' action button from pub.{field}",
+                )
+
+    def test_pub_action_buttons_above_stretched_link(self):
+        # The .pub-actions container needs z-index higher than the stretched
+        # title link's ::after (z-index: 1), or buttons become unclickable.
+        self.assertRegex(
+            self.body,
+            r"\.pub-actions\s*\{[^}]*z-index:\s*2",
+            "about.md .pub-actions must have z-index: 2 so buttons sit above "
+            "the stretched title link overlay",
+        )
+
+    def test_pub_href_fallback_chain(self):
+        # The card title's href should fall back:
+        #   paperurl → arxivurl → permalink
+        self.assertIn("pub.paperurl", self.body,
+                      "about.md pub card link should prefer pub.paperurl")
+        self.assertIn("pub.arxivurl", self.body,
+                      "about.md pub card link should fall back to pub.arxivurl")
+        self.assertIn("pub.permalink", self.body,
+                      "about.md pub card link should ultimately fall back to pub.permalink")
 
     def test_no_auto_year_append_in_venue_line(self):
         # Earlier version appended ", {{ pub.date | date: '%Y' }}" to the
@@ -454,6 +574,29 @@ class SidebarTests(unittest.TestCase):
             r'<button[^>]*>\s*Follow\s*</button>',
             "sidebar still has the non-functional 'Follow' button — remove it",
         )
+
+
+class PublicationActionFieldsTests(unittest.TestCase):
+    """Each featured publication's front matter should declare the four
+    action-URL fields (arxivurl / paperurl / codeurl / blogurl) so the
+    homepage Liquid template always has something to look at (even if the
+    values are empty strings). This is a regression guard: forgetting to
+    add arxivurl in a new pub file would silently hide the arXiv button."""
+
+    ACTION_FIELDS = ("arxivurl", "paperurl", "codeurl", "blogurl")
+
+    def test_featured_pubs_declare_action_fields(self):
+        for p in sorted(PUBS_DIR.glob("*.md")):
+            meta, _ = parse_front_matter(p)
+            if not meta.get("featured"):
+                continue
+            for field in self.ACTION_FIELDS:
+                with self.subTest(file=p.name, field=field):
+                    self.assertIn(
+                        field, meta,
+                        f"{p.name}: featured pubs should declare '{field}' "
+                        f"in front matter (use empty string if no URL yet)",
+                    )
 
 
 class PublicationVenueSanityTests(unittest.TestCase):

@@ -10,6 +10,7 @@ venue: "<i>Communications Physics</i>, 6, 325 (2023)"
 authors: "K. Hegazy, V. Makhija, et al."
 citation: "K. Hegazy, V. Makhija, et al. (2023). &quot;Applying Bayesian Inference and Deterministic Anisotropy to Retrieve the Molecular Structure from Gas-Phase Diffraction Experiments.&quot; <i>Communications Physics (Nature)</i>, 6, 325."
 paperurl: "https://www.nature.com/articles/s42005-023-01448-x"
+arxivurl: ""
 codeurl: ""
 blogurl: ""
 ---
