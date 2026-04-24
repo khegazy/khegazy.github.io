@@ -1,19 +1,59 @@
 {% include base_path %}
 
+<style>
+/* Layout: social icons on the left, nav links on the right */
+.masthead .greedy-nav .visible-links {
+  display: flex !important;
+  align-items: center;
+  width: 100%;
+}
+.masthead .greedy-nav .visible-links li {
+  display: block !important;
+}
+.masthead .greedy-nav .visible-links li:first-child { font-weight: normal; }
+.masthead .greedy-nav .visible-links li:first-child a { margin-left: 0; }
+
+.masthead__menu-item--social a {
+  padding: 0 0.35em;
+  font-size: 1.1rem;
+}
+.masthead__menu-item--nav-start { margin-left: auto; }
+
+@media (max-width: 600px) {
+  .masthead .greedy-nav .visible-links { flex-wrap: wrap; }
+  .masthead__menu-item--nav-start { margin-left: 0; }
+}
+</style>
+
 <div class="masthead">
   <div class="masthead__inner-wrap">
     <div class="masthead__menu">
       <nav id="site-nav" class="greedy-nav">
         <button><div class="navicon"></div></button>
         <ul class="visible-links">
-          <li class="masthead__menu-item masthead__menu-item--lg"><a href="{{ base_path }}/">{{ site.title }}</a></li>
+          {% if site.author.github %}
+          <li class="masthead__menu-item masthead__menu-item--social"><a href="https://github.com/{{ site.author.github }}" aria-label="GitHub" title="GitHub"><i class="fab fa-github" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if site.author.linkedin %}
+          <li class="masthead__menu-item masthead__menu-item--social"><a href="https://www.linkedin.com/in/{{ site.author.linkedin }}" aria-label="LinkedIn" title="LinkedIn"><i class="fab fa-linkedin" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if site.author.twitter %}
+          <li class="masthead__menu-item masthead__menu-item--social"><a href="https://twitter.com/{{ site.author.twitter }}" aria-label="Twitter" title="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if site.author.googlescholar %}
+          <li class="masthead__menu-item masthead__menu-item--social"><a href="{{ site.author.googlescholar }}" aria-label="Google Scholar" title="Google Scholar"><i class="fas fa-graduation-cap" aria-hidden="true"></i></a></li>
+          {% endif %}
+          {% if site.author.email %}
+          <li class="masthead__menu-item masthead__menu-item--social"><a href="mailto:{{ site.author.email }}" aria-label="Email" title="Email"><i class="fas fa-envelope" aria-hidden="true"></i></a></li>
+          {% endif %}
+
           {% for link in site.data.navigation.main %}
             {% if link.url contains 'http' %}
               {% assign domain = '' %}
-              {% else %}
+            {% else %}
               {% assign domain = base_path %}
             {% endif %}
-            <li class="masthead__menu-item"><a href="{{ domain }}{{ link.url }}">{{ link.title }}</a></li>
+            <li class="masthead__menu-item{% if forloop.first %} masthead__menu-item--nav-start{% endif %}"><a href="{{ domain }}{{ link.url }}">{{ link.title }}</a></li>
           {% endfor %}
         </ul>
         <ul class="hidden-links hidden"></ul>

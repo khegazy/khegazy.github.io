@@ -1,26 +1,131 @@
 ---
 permalink: /
-title: "Research Interests"
-excerpt: "About me"
+title: "Kareem Hegazy"
+excerpt: "Postdoctoral researcher at UC Berkeley / Berkeley Lab / ICSI. Physics PhD from Stanford."
 author_profile: true
-redirect_from: 
+redirect_from:
   - /about/
   - /about.html
 ---
 
-I am broadly interested in the intersection of physics and machine learning.
-My work encompasses LLMs for time series, integrating ML into thermodynamic processes for time-series and PDE modeling, ML chemical potentials, and inverse problems.
+<style>
+/* Homepage section tweaks */
+.page__content h1,
+.page__content h2 {
+  margin-top: 2.25em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid #eee;
+}
+.page__content h1:first-of-type { margin-top: 1em; }
 
+/* Publication / blog cards */
+.pub-card {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-start;
+  margin: 1.25rem 0;
+}
+.pub-card .pub-thumb {
+  width: 180px;
+  max-width: 30%;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.pub-card .pub-body { flex: 1; min-width: 0; }
+.pub-card h4 { margin: 0 0 0.35em 0; font-weight: 600; }
+.pub-card .pub-excerpt { color: #444; font-style: italic; margin: 0.25em 0 0.5em 0; }
+.pub-card .pub-authors { margin: 0.15em 0; font-size: 0.95em; }
+.pub-card .pub-venue { margin: 0.15em 0; font-size: 0.95em; color: #555; }
+.pub-card .pub-venue a { text-decoration: none; }
+.pub-sep { border: 0; border-top: 1px solid #eee; margin: 1.5rem 0; }
 
-Biography
+.empty-state {
+  color: #777;
+  font-style: italic;
+  padding: 0.75rem 0;
+}
+
+@media (max-width: 600px) {
+  .pub-card { flex-direction: column; }
+  .pub-card .pub-thumb { width: 100%; max-width: 100%; }
+}
+</style>
+
+I am a postdoctoral researcher investigating the intersection of Physics, Chemistry, and AI with [Michael Mahoney](https://www.stat.berkeley.edu/~mmahoney/) and [Benjamin Erichson](https://www.benerichson.com/). I have a joint appointment at the [Berkeley Statistics department](https://statistics.berkeley.edu/), [Lawrence Berkeley National Lab](https://www.lbl.gov/), and the [International Computer Science Institute](https://www.icsi.berkeley.edu/icsi/).
+
+I received my Physics PhD from Stanford in 2023 under the mentorship of [Phil Bucksbaum](https://physics.stanford.edu/people/philip-bucksbaum) and [Ryan Coffee](https://profiles.stanford.edu/ryan-coffee), where I researched excited-state quantum molecular dynamics through [ultrafast gas-phase diffraction](https://lcls.slac.stanford.edu/instruments/mev-ued). For my [dissertation](https://www.proquest.com/openview/b0faf8c1ab75235805be040f23ea621e/1?pq-origsite=gscholar&cbl=18750&diss=y), I applied theoretical physics, statistics, and fundamental machine learning techniques to invert measured diffraction patterns for molecular-frame structure probability distributions, addressing a 50-year-old inverse problem.
+
+During the summer of 2019 I interned at Google X as an AI Research Fellow, where I worked in the [Blueshift team](https://research.google/teams/blueshift/) using adversarial examples to probe fundamental properties of disparate neural network architectures.
+
+I received an Honors B.Sc. from the University of Michigan, majoring in Physics and Math. During that time I researched High Energy Particle Physics at CERN with [Bing Zhou](https://lsa.umich.edu/physics/people/faculty/bzhou.html). My [undergraduate research](https://deepblue.lib.umich.edu/bitstream/handle/2027.42/107730/khegazy.pdf;sequence=1) focused on the discovery of the Higgs Boson and measuring its spin.
+
+Research Interests
 ====
 
-I am a postdoctoral researcher investigating the intersection of Physics, Chemistry, and AI with [Michael Mahoney](https://www.stat.berkeley.edu/~mmahoney/) and [Benjamin Erichson](https://www.benerichson.com/). 
-I have a joint appointment at the [Berkeley Statistics department](https://statistics.berkeley.edu/), [Lawrence Berkeley National Lab](https://www.lbl.gov/), and the [International Computer Science Institute](https://www.icsi.berkeley.edu/icsi/). 
-I received my Physics PhD from Stanford in 2023 under the mentorship of [Phil Bucksbaum](https://physics.stanford.edu/people/philip-bucksbaum) and [Ryan Coffee](https://profiles.stanford.edu/ryan-coffee) where I researched excited state quantum molecular dynamics through [ultrafast gas-phase diffraction](https://lcls.slac.stanford.edu/instruments/mev-ued). 
-For my [dissertation](https://www.proquest.com/openview/b0faf8c1ab75235805be040f23ea621e/1?pq-origsite=gscholar&cbl=18750&diss=y), I applied theoretical physics, statistics, and fundamental machine learning techniques to invert the measured diffraction patterns for molecular frame structure probability distributions, addressing a 50 year-old inverse problem.
-During the summer of 2019 I interned at Google X as an AI Research Fellow where I worked in the [blushift team](https://research.google/teams/blueshift/) using adversarial examples to probe fundamental properties between disparate neural network architectures.
+I am broadly interested in the intersection of physics and machine learning. My work encompasses LLMs for time series, integrating ML into thermodynamic processes for time-series and PDE modeling, ML chemical potentials, and inverse problems.
 
-I received an Honors B.Sc from the University of Michigan, majoring in Physics and Math.
-During this time I researched High Energy Particle Physics at CERN with [Bing Zhou](https://lsa.umich.edu/physics/people/faculty/bzhou.html).
-My [research](https://deepblue.lib.umich.edu/bitstream/handle/2027.42/107730/khegazy.pdf;sequence=1) focused on the discovery of the Higgs Boson and measuring its spin.
+<h1 id="publications">Selected Publications</h1>
+
+{% assign featured_pubs = site.publications | where: "featured", true | sort: "date" | reverse %}
+{% if featured_pubs.size > 0 %}
+  {% for pub in featured_pubs %}
+<div class="pub-card">
+  {% if pub.thumbnail %}
+  <img class="pub-thumb" src="{{ pub.thumbnail | relative_url }}" alt="{{ pub.title | strip_html }}" onerror="this.style.display='none'"/>
+  {% endif %}
+  <div class="pub-body">
+    <h4><a href="{{ pub.permalink | relative_url }}">{{ pub.title }}</a></h4>
+    {% if pub.excerpt %}<p class="pub-excerpt">{{ pub.excerpt }}</p>{% endif %}
+    {% if pub.authors %}<p class="pub-authors">{{ pub.authors }}</p>{% endif %}
+    <p class="pub-venue">
+      {{ pub.venue }}{% if pub.date %}, {{ pub.date | date: "%Y" }}{% endif %}
+      {% if pub.paperurl and pub.paperurl != "" %} &nbsp;[<a href="{{ pub.paperurl }}">Paper</a>]{% endif %}
+      {% if pub.codeurl and pub.codeurl != "" %} [<a href="{{ pub.codeurl }}">Code</a>]{% endif %}
+      {% if pub.blogurl and pub.blogurl != "" %} [<a href="{{ pub.blogurl }}">Blog</a>]{% endif %}
+    </p>
+  </div>
+</div>
+<hr class="pub-sep"/>
+  {% endfor %}
+{% else %}
+<p class="empty-state">Featured publications will appear here.</p>
+{% endif %}
+
+<p>For a full list, see my <a href="{{ site.author.googlescholar }}">Google Scholar</a> or the <a href="{{ '/publications/' | relative_url }}">full publications page</a>.</p>
+
+<h1 id="blog">Selected Blogs</h1>
+
+{% assign featured_posts = site.posts | where: "featured", true %}
+{% if featured_posts.size > 0 %}
+  {% for post in featured_posts %}
+<div class="pub-card">
+  {% if post.thumbnail %}
+  <img class="pub-thumb" src="{{ post.thumbnail | relative_url }}" alt="{{ post.title | strip_html }}" onerror="this.style.display='none'"/>
+  {% endif %}
+  <div class="pub-body">
+    <h4><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h4>
+    {% if post.excerpt %}<p class="pub-excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</p>{% endif %}
+    <p class="pub-venue">
+      {{ post.date | date: "%B %Y" }} &nbsp; <a href="{{ post.url | relative_url }}">Read &rarr;</a>
+    </p>
+  </div>
+</div>
+<hr class="pub-sep"/>
+  {% endfor %}
+{% else %}
+<p class="empty-state">Blog posts coming soon.</p>
+{% endif %}
+
+<h1 id="cv">Curriculum Vitae</h1>
+
+<p><a href="{{ '/files/Resume.pdf' | relative_url }}" class="btn btn--inverse">Download CV (PDF)</a></p>
+
+<h1 id="contact">Get in touch</h1>
+
+<p>
+  Email: <a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a><br/>
+  <a href="https://github.com/{{ site.author.github }}">GitHub</a> &nbsp;·&nbsp;
+  <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}">LinkedIn</a> &nbsp;·&nbsp;
+  <a href="https://twitter.com/{{ site.author.twitter }}">Twitter</a> &nbsp;·&nbsp;
+  <a href="{{ site.author.googlescholar }}">Google Scholar</a>
+</p>
