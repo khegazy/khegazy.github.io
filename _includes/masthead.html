@@ -1,27 +1,34 @@
 {% include base_path %}
 
 <style>
-/* Layout: social icons on the left, nav links on the right */
-.masthead .greedy-nav .visible-links {
-  display: flex !important;
-  align-items: center;
+/* Layout: social icons on the left, nav links on the right.
+   Keeps the theme's `display: table` so the greedy-nav JS stays happy —
+   uses a full-width spacer cell to push subsequent items to the right. */
+.masthead .greedy-nav .visible-links .masthead__menu-item--spacer {
   width: 100%;
+  pointer-events: none;
 }
-.masthead .greedy-nav .visible-links li {
-  display: block !important;
+.masthead .greedy-nav .visible-links .masthead__menu-item--spacer a {
+  display: none;
 }
+
+/* Un-bold the first (leftmost) item — the theme bolds it assuming it's a
+   site title. We put a social icon there instead. */
 .masthead .greedy-nav .visible-links li:first-child { font-weight: normal; }
 .masthead .greedy-nav .visible-links li:first-child a { margin-left: 0; }
 
+/* Social icons: tight spacing, no underline-on-hover animation. */
 .masthead__menu-item--social a {
-  padding: 0 0.35em;
+  padding: 0 0.25em !important;
+  margin: 0 0.25em !important;
   font-size: 1.1rem;
 }
-.masthead__menu-item--nav-start { margin-left: auto; }
+.masthead__menu-item--social a:before { display: none !important; }
 
 @media (max-width: 600px) {
-  .masthead .greedy-nav .visible-links { flex-wrap: wrap; }
-  .masthead__menu-item--nav-start { margin-left: 0; }
+  .masthead .greedy-nav .visible-links .masthead__menu-item--spacer {
+    display: none;
+  }
 }
 </style>
 
@@ -47,13 +54,15 @@
           <li class="masthead__menu-item masthead__menu-item--social"><a href="mailto:{{ site.author.email }}" aria-label="Email" title="Email"><i class="fas fa-envelope" aria-hidden="true"></i></a></li>
           {% endif %}
 
+          <li class="masthead__menu-item masthead__menu-item--spacer" aria-hidden="true"><a href="#" tabindex="-1">&nbsp;</a></li>
+
           {% for link in site.data.navigation.main %}
             {% if link.url contains 'http' %}
               {% assign domain = '' %}
             {% else %}
               {% assign domain = base_path %}
             {% endif %}
-            <li class="masthead__menu-item{% if forloop.first %} masthead__menu-item--nav-start{% endif %}"><a href="{{ domain }}{{ link.url }}">{{ link.title }}</a></li>
+            <li class="masthead__menu-item masthead__menu-item--nav"><a href="{{ domain }}{{ link.url }}">{{ link.title }}</a></li>
           {% endfor %}
         </ul>
         <ul class="hidden-links hidden"></ul>

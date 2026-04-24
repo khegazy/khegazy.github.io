@@ -6,7 +6,7 @@ featured: true
 thumbnail: /images/publications/bigr.png
 excerpt: "Novel Bayesian statistical framework that transforms gas-phase diffraction into 3D molecular images — 100× resolution improvement, no simulation bottleneck."
 date: 2023-10-01
-venue: "<i>Communications Physics (Nature)</i>, 6, 325"
+venue: "<i>Communications Physics</i>, 6, 325 (2023)"
 authors: "K. Hegazy, V. Makhija, et al."
 citation: "K. Hegazy, V. Makhija, et al. (2023). &quot;Applying Bayesian Inference and Deterministic Anisotropy to Retrieve the Molecular Structure from Gas-Phase Diffraction Experiments.&quot; <i>Communications Physics (Nature)</i>, 6, 325."
 paperurl: "https://www.nature.com/articles/s42005-023-01448-x"

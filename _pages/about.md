@@ -18,11 +18,9 @@ redirect_from:
 }
 .page__content h1:first-of-type { margin-top: 1em; }
 
-/* Clickable publication card (title / authors / venue) */
+/* Clickable publication card (title / authors / venue / description) */
 .pub-link-card {
-  display: block;
-  text-decoration: none !important;
-  color: inherit;
+  position: relative;
   border: 1px solid #e5e5e5;
   border-radius: 6px;
   padding: 0.9rem 1.15rem;
@@ -33,12 +31,26 @@ redirect_from:
   background: #fafafa;
   border-color: #c9c9c9;
   box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-  text-decoration: none;
 }
-.pub-link-card h4 {
+.pub-link-card .pub-title {
   margin: 0 0 0.3em 0;
   font-weight: 600;
+  font-size: 1.05em;
+  line-height: 1.3;
+}
+.pub-link-card .pub-title a {
   color: #222;
+  text-decoration: none;
+}
+/* "Stretched link" — makes the whole card clickable via the title anchor */
+.pub-link-card .pub-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.pub-link-card:hover .pub-title a {
+  text-decoration: underline;
 }
 .pub-link-card .pub-authors {
   margin: 0.1em 0;
@@ -50,6 +62,12 @@ redirect_from:
   font-size: 0.9em;
   color: #666;
   font-style: italic;
+}
+.pub-link-card .pub-excerpt {
+  margin: 0.5em 0 0 0;
+  font-size: 0.95em;
+  color: #333;
+  line-height: 1.5;
 }
 
 /* Blog card (still uses thumbnail layout) */
@@ -88,6 +106,7 @@ I am broadly interested in the intersection of physics and machine learning — 
 
 <h1 id="publications">Selected Publications</h1>
 
+<div class="pubs-list">
 {% assign featured_pubs = site.publications | where: "featured", true | sort: "date" | reverse %}
 {% if featured_pubs.size > 0 %}
   {% for pub in featured_pubs %}
@@ -96,15 +115,17 @@ I am broadly interested in the intersection of physics and machine learning — 
     {% else %}
       {% assign pub_href = pub.permalink | relative_url %}
     {% endif %}
-<a class="pub-link-card" href="{{ pub_href }}">
-  <h4>{{ pub.title }}</h4>
+<div class="pub-link-card" markdown="0">
+  <h4 class="pub-title"><a href="{{ pub_href }}">{{ pub.title }}</a></h4>
   {% if pub.authors %}<p class="pub-authors">{{ pub.authors }}</p>{% endif %}
-  <p class="pub-venue">{{ pub.venue }}{% if pub.date %}, {{ pub.date | date: "%Y" }}{% endif %}</p>
-</a>
+  {% if pub.venue %}<p class="pub-venue">{{ pub.venue }}</p>{% endif %}
+  {% if pub.excerpt %}<p class="pub-excerpt">{{ pub.excerpt | strip_html }}</p>{% endif %}
+</div>
   {% endfor %}
 {% else %}
 <p class="empty-state">Featured publications will appear here.</p>
 {% endif %}
+</div>
 
 <p>For a full list, see my <a href="{{ site.author.googlescholar }}">Google Scholar</a> or the <a href="{{ '/publications/' | relative_url }}">full publications page</a>.</p>
 
