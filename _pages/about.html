@@ -184,6 +184,35 @@ redirect_from:
 }
 
 /* ------------------------------------------------------------------
+   "Full list on Scholar" callout under Selected Publications
+   ------------------------------------------------------------------ */
+.scholar-callout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 1.2em 0 2.25em 0;
+  padding: 0.6em 0;
+  border-top: 1px solid #eee;
+  color: #444;
+  font-size: 0.98em;
+}
+.scholar-callout__text { flex: 1 1 auto; }
+.scholar-callout__link {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3em;
+  color: #333;
+  text-decoration: none;
+  padding: 0.25em 0.4em;
+  border-radius: 4px;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.scholar-callout__link:hover { color: #000; background: #f3f4f6; }
+
+/* ------------------------------------------------------------------
    Blog card (with thumbnail)
    ------------------------------------------------------------------ */
 .pub-card { display: flex; gap: 1.25rem; align-items: flex-start; margin: 1.25rem 0; width: 100%; }
@@ -253,7 +282,12 @@ redirect_from:
 {% endif %}
 </div>
 
-<p>For a full list, see my <a href="{{ site.author.googlescholar }}">Google Scholar</a> or the <a href="{{ '/publications/' | relative_url }}">full publications page</a>.</p>
+<p class="scholar-callout">
+  <span class="scholar-callout__text">Please see my scholar page for all my up-to-date publications.</span>
+  <a class="scholar-callout__link" href="{{ site.author.googlescholar }}" aria-label="Google Scholar" title="Google Scholar" rel="noopener">
+    <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+  </a>
+</p>
 
 <h1 id="blog">Selected Blogs</h1>
 

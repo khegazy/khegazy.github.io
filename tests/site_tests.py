@@ -193,25 +193,40 @@ class NavigationTests(unittest.TestCase):
         self.assertEqual(titles, ["Home", "Publications", "Blog", "CV", "Contact"])
 
     def test_nav_urls_resolve(self):
-        # URL -> what we expect to exist in the repo
+        # URL -> what we expect to exist in the repo. Homepage-anchor URLs
+        # (e.g. "/#publications", "/#contact") are validated by looking
+        # up the matching id= on about.html.
         checks = {
             "/": PAGES_DIR / "about.html",
-            "/publications/": PAGES_DIR / "publications.md",
             "/year-archive/": PAGES_DIR / "year-archive.html",
             "/files/Resume.pdf": FILES_DIR / "Resume.pdf",
         }
+        about_text = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
         for item in self.main:
             url = item["url"]
-            if url == "/#contact":
-                # anchor on homepage; check the anchor exists in about.html
-                about = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
-                self.assertIn('id="contact"', about,
-                              "about.html is missing the #contact anchor")
+            if url.startswith("/#"):
+                anchor = url[2:]  # strip leading "/#"
+                self.assertIn(
+                    f'id="{anchor}"', about_text,
+                    f"Nav '{item['title']}' points to {url}, but about.html "
+                    f"has no matching id=\"{anchor}\" to scroll to",
+                )
                 continue
             target = checks.get(url)
             self.assertIsNotNone(target, f"Unexpected nav URL: {url}")
             self.assertTrue(target.exists(),
                             f"Nav '{item['title']}' points to {url}, but {target} does not exist")
+
+    def test_publications_nav_anchors_home_section(self):
+        # User wants the Publications nav link to scroll to the Selected
+        # Publications block on the homepage (not navigate away to the
+        # full archive page).
+        urls = {item["url"] for item in self.main}
+        self.assertIn(
+            "/#publications", urls,
+            "Publications nav link should be '/#publications' so it "
+            "scrolls to the Selected Publications section on the homepage",
+        )
 
 
 class MastheadTests(unittest.TestCase):
@@ -240,13 +255,29 @@ class MastheadTests(unittest.TestCase):
         )
 
     def test_first_nav_item_pushed_right(self):
-        # margin-left: auto on the first nav <li> pushes nav items to the
-        # right side of the bar, after the social icons.
+        # margin-left: auto on the FIRST nav <li> pushes every remaining
+        # nav item to the right side of the bar, after the social icons.
+        # CSS has no ":first-of-class", so we use the adjacent-sibling
+        # combinator: a --nav <li> that directly follows a --social <li>
+        # is exactly the first nav item (only one such pair exists).
+        #
+        # Regression guard: :first-of-type does NOT work here because
+        # every child of .visible-links is an <li>, so :first-of-type
+        # matches the first li in the list (a social icon), not the
+        # first --nav li.
+        self.assertNotRegex(
+            self.text,
+            r"\.masthead__menu-item--nav:first-of-type\s*\{",
+            "masthead.html must NOT use :first-of-type to select the first "
+            "nav <li> — every child is an <li>, so it matches the first "
+            "SOCIAL icon instead of the first nav item",
+        )
         self.assertRegex(
             self.text,
-            r"\.masthead__menu-item--nav:first-of-type\s*\{[^}]*margin-left:\s*auto",
-            "masthead.html should push nav items right via margin-left: auto "
-            "on .masthead__menu-item--nav:first-of-type",
+            r"\.masthead__menu-item--social\s*\+\s*\.masthead__menu-item--nav\s*\{[^}]*margin-left:\s*auto",
+            "masthead.html should push nav items right via the adjacent-"
+            "sibling selector '.masthead__menu-item--social + "
+            ".masthead__menu-item--nav { margin-left: auto }'",
         )
 
     def test_no_spacer_cell(self):
@@ -460,6 +491,61 @@ class AboutPageTests(unittest.TestCase):
             r"\.hero__image\s*\{[^}]*object-fit:\s*cover",
             "about.html .hero__image should NOT use object-fit: cover — "
             "the user wants the full rectangular image without cropping",
+        )
+
+    def test_publications_anchor_exists(self):
+        # The Publications nav link scrolls to /#publications, so the
+        # homepage must define id="publications" for the browser to
+        # find its scroll target.
+        self.assertIn(
+            'id="publications"', self.body,
+            "about.html should define id=\"publications\" (the nav link "
+            "'/#publications' scrolls to it)",
+        )
+
+    def test_scholar_callout_after_pubs(self):
+        # User wants a callout line at the end of the selected publications
+        # with the text pointing to their Scholar page and a matching
+        # graduation-cap icon button (same icon used in the masthead).
+        self.assertIn(
+            "scholar-callout", self.body,
+            "about.html should include a .scholar-callout block after the "
+            "Selected Publications list",
+        )
+        self.assertIn(
+            "scholar page for all my up-to-date publications", self.body,
+            "about.html scholar-callout should carry the user's requested "
+            "copy (\"scholar page for all my up-to-date publications\")",
+        )
+        # The button must use the same Font Awesome graduation-cap icon
+        # as the masthead's Google Scholar social icon, and link to
+        # site.author.googlescholar.
+        self.assertRegex(
+            self.body,
+            r'class="scholar-callout__link"[^>]*href="\{\{\s*site\.author\.googlescholar\s*\}\}"',
+            "about.html scholar-callout link should use "
+            "href=\"{{ site.author.googlescholar }}\" (same as masthead)",
+        )
+        self.assertRegex(
+            self.body,
+            r'scholar-callout__link[^<]*<i[^>]*fa-graduation-cap',
+            "about.html scholar-callout should render the fa-graduation-cap "
+            "icon (the same one used in the masthead)",
+        )
+
+    def test_scholar_callout_flex_layout(self):
+        # Text on the left, button on the right — flex with
+        # justify-content: space-between is how we position them.
+        self.assertRegex(
+            self.body,
+            r"\.scholar-callout\s*\{[^}]*display:\s*flex",
+            "about.html .scholar-callout should use display: flex",
+        )
+        self.assertRegex(
+            self.body,
+            r"\.scholar-callout\s*\{[^}]*justify-content:\s*space-between",
+            "about.html .scholar-callout should use justify-content: "
+            "space-between so the button sits on the right",
         )
 
     def test_hero_is_vertically_centered(self):

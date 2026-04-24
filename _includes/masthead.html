@@ -36,7 +36,12 @@
   padding: 0;
   margin: 0;
 }
-.masthead .greedy-nav .visible-links .masthead__menu-item--nav:first-of-type {
+/* Push the first nav link (and only the first) to the right, so every
+   remaining nav link sits to its right. CSS has no ":first-of-class", so
+   we target "a --nav <li> that directly follows a --social <li>" — that
+   pair can only occur exactly once, at the hand-off between the social
+   icon group and the nav link group. */
+.masthead .greedy-nav .visible-links .masthead__menu-item--social + .masthead__menu-item--nav {
   margin-left: auto;
 }
 .masthead .greedy-nav .visible-links li:first-child { font-weight: normal; }
