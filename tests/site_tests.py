@@ -242,7 +242,7 @@ class NavigationTests(unittest.TestCase):
 
     def test_nav_has_all_expected_items(self):
         titles = [item["title"] for item in self.main]
-        self.assertEqual(titles, ["Home", "Publications", "Blog", "CV", "Contact"])
+        self.assertEqual(titles, ["Home", "Publications", "Blog", "Resume", "Contact"])
 
     def test_nav_urls_resolve(self):
         # URL -> what we expect to exist in the repo. Homepage-anchor URLs
@@ -649,7 +649,7 @@ class AboutPageTests(unittest.TestCase):
 
     def test_required_sections(self):
         for heading in ("Selected Publications", "Selected Blogs",
-                        "Curriculum Vitae", "Get in touch"):
+                        "Resume", "Get in touch"):
             with self.subTest(heading=heading):
                 self.assertIn(heading, self.body,
                               f"about.html missing required section: {heading}")
