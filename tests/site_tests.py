@@ -579,8 +579,8 @@ class AboutPageTests(unittest.TestCase):
         )
 
     def test_scholar_callout_flex_layout(self):
-        # Text on the left, button on the right — flex with
-        # justify-content: space-between is how we position them.
+        # User wants the text and the scholar icon to sit next to each
+        # other as a single centered unit (not text-left, icon-right).
         self.assertRegex(
             self.body,
             r"\.scholar-callout\s*\{[^}]*display:\s*flex",
@@ -588,9 +588,17 @@ class AboutPageTests(unittest.TestCase):
         )
         self.assertRegex(
             self.body,
-            r"\.scholar-callout\s*\{[^}]*justify-content:\s*space-between",
+            r"\.scholar-callout\s*\{[^}]*justify-content:\s*center",
             "about.html .scholar-callout should use justify-content: "
-            "space-between so the button sits on the right",
+            "center so the sentence and the scholar icon are grouped "
+            "as a centered unit (not pushed to opposite sides)",
+        )
+        self.assertNotRegex(
+            self.body,
+            r"\.scholar-callout\s*\{[^}]*justify-content:\s*space-between",
+            "about.html .scholar-callout must NOT use justify-content: "
+            "space-between — that spreads the sentence and icon to "
+            "opposite ends of the row",
         )
 
     def test_hero_is_vertically_centered(self):
