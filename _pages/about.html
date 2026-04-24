@@ -320,7 +320,7 @@ redirect_from:
     {% if pub.paperurl and pub.paperurl != "" %}
     <a class="pub-action pub-action--journal" href="{{ pub.paperurl }}" rel="noopener">{{ journal_label }}</a>
     {% else %}
-    <span class="pub-action pub-action--journal pub-action--disabled" aria-disabled="true" title="Not yet published">{{ journal_label }}</span>
+    <span class="pub-action pub-action--journal pub-action--disabled" aria-disabled="true" title="Not yet published">Submitted: {{ journal_label }}</span>
     {% endif %}
     {% if pub.blogurl and pub.blogurl != "" %}<a class="pub-action" href="{{ pub.blogurl }}" rel="noopener">Blog</a>{% endif %}
     {% if pub.arxivurl and pub.arxivurl != "" %}<a class="pub-action" href="{{ pub.arxivurl }}" rel="noopener">arXiv</a>{% endif %}

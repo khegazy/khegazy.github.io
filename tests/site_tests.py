@@ -722,6 +722,18 @@ class AboutPageTests(unittest.TestCase):
             "so it cannot be clicked",
         )
 
+    def test_pub_card_disabled_journal_says_submitted(self):
+        # User requested: when a paper is in submission (no paperurl),
+        # the journal button text must be prefixed with "Submitted: "
+        # e.g. "Submitted: Nature Computational Science".
+        self.assertRegex(
+            self.body,
+            r'pub-action--disabled"[^>]*>\s*Submitted:\s*\{\{\s*journal_label\s*\}\}',
+            'about.html disabled journal button should read '
+            '"Submitted: {journal name}" — user wants "Submitted" prefix '
+            'on papers that are not yet published',
+        )
+
     def test_pub_card_excerpt_renders_after_actions(self):
         # User requested excerpt on the BOTTOM of the card (below the
         # button row, not above it). Check source order.
