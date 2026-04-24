@@ -82,18 +82,9 @@ redirect_from:
 }
 </style>
 
-I am a postdoctoral researcher investigating the intersection of Physics, Chemistry, and AI with [Michael Mahoney](https://www.stat.berkeley.edu/~mmahoney/) and [Benjamin Erichson](https://www.benerichson.com/). I have a joint appointment at the [Berkeley Statistics department](https://statistics.berkeley.edu/), [Lawrence Berkeley National Lab](https://www.lbl.gov/), and the [International Computer Science Institute](https://www.icsi.berkeley.edu/icsi/).
+I am a postdoctoral researcher at [UC Berkeley](https://statistics.berkeley.edu/), [Lawrence Berkeley National Lab](https://www.lbl.gov/), and [ICSI](https://www.icsi.berkeley.edu/icsi/), working with [Michael Mahoney](https://www.stat.berkeley.edu/~mmahoney/) and [Benjamin Erichson](https://www.benerichson.com/) at the intersection of Physics, Chemistry, and AI. I received my Physics PhD from Stanford in 2023 under [Phil Bucksbaum](https://physics.stanford.edu/people/philip-bucksbaum) and [Ryan Coffee](https://profiles.stanford.edu/ryan-coffee), where I studied excited-state quantum molecular dynamics through [ultrafast gas-phase diffraction](https://lcls.slac.stanford.edu/instruments/mev-ued). In summer 2019 I was an AI Research Fellow at Google X on the [Blueshift team](https://research.google/teams/blueshift/). I previously earned an Honors B.Sc. in Physics and Math from the University of Michigan, where I researched the Higgs Boson at CERN with [Bing Zhou](https://lsa.umich.edu/physics/people/faculty/bzhou.html).
 
-I received my Physics PhD from Stanford in 2023 under the mentorship of [Phil Bucksbaum](https://physics.stanford.edu/people/philip-bucksbaum) and [Ryan Coffee](https://profiles.stanford.edu/ryan-coffee), where I researched excited-state quantum molecular dynamics through [ultrafast gas-phase diffraction](https://lcls.slac.stanford.edu/instruments/mev-ued). For my [dissertation](https://www.proquest.com/openview/b0faf8c1ab75235805be040f23ea621e/1?pq-origsite=gscholar&cbl=18750&diss=y), I applied theoretical physics, statistics, and fundamental machine learning techniques to invert measured diffraction patterns for molecular-frame structure probability distributions, addressing a 50-year-old inverse problem.
-
-During the summer of 2019 I interned at Google X as an AI Research Fellow, where I worked in the [Blueshift team](https://research.google/teams/blueshift/) using adversarial examples to probe fundamental properties of disparate neural network architectures.
-
-I received an Honors B.Sc. from the University of Michigan, majoring in Physics and Math. During that time I researched High Energy Particle Physics at CERN with [Bing Zhou](https://lsa.umich.edu/physics/people/faculty/bzhou.html). My [undergraduate research](https://deepblue.lib.umich.edu/bitstream/handle/2027.42/107730/khegazy.pdf;sequence=1) focused on the discovery of the Higgs Boson and measuring its spin.
-
-Research Interests
-====
-
-I am broadly interested in the intersection of physics and machine learning. My work encompasses LLMs for time series, integrating ML into thermodynamic processes for time-series and PDE modeling, ML chemical potentials, and inverse problems.
+I am broadly interested in the intersection of physics and machine learning — LLMs for time series, ML for thermodynamic processes and PDE modeling, ML chemical potentials, and inverse problems.
 
 <h1 id="publications">Selected Publications</h1>
 
