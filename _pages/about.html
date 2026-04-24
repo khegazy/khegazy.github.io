@@ -296,7 +296,16 @@ redirect_from:
 <h1 id="publications">Selected Publications</h1>
 
 <div class="pubs-list">
-{% assign featured_pubs = site.publications | where: "featured", true | sort: "date" | reverse %}
+{% comment %}
+  Featured publications: render date-desc, but any pub with
+  `pin_to_end: true` in its front matter is moved to the bottom of the
+  list regardless of date. Useful for de-emphasizing older/off-topic
+  work while keeping it visible.
+{% endcomment %}
+{% assign all_featured = site.publications | where: "featured", true %}
+{% assign main_pubs = all_featured | where_exp: "pub", "pub.pin_to_end != true" | sort: "date" | reverse %}
+{% assign pinned_pubs = all_featured | where: "pin_to_end", true | sort: "date" | reverse %}
+{% assign featured_pubs = main_pubs | concat: pinned_pubs %}
 {% if featured_pubs.size > 0 %}
   {% for pub in featured_pubs %}
     {% if pub.paperurl and pub.paperurl != "" %}

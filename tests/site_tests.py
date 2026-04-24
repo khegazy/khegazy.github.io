@@ -127,14 +127,26 @@ class PublicationFrontMatterTests(unittest.TestCase):
                     f"{p.name}: 'date' must parse to a date, got {type(meta['date']).__name__}",
                 )
 
-    def test_all_six_are_featured(self):
+    def test_expected_featured_set(self):
+        # The user curates which publications appear on the homepage.
+        # Popcornn (Neural Path Optimization) was pulled from the
+        # featured list in April 2026 — still work in progress, will be
+        # re-added when submitted.
+        EXPECTED_UNFEATURED = {"2025-10-01-popcornn.md"}
         for p in self.files:
             with self.subTest(file=p.name):
                 meta, _ = parse_front_matter(p)
-                self.assertTrue(
-                    meta.get("featured") is True,
-                    f"{p.name}: 'featured' should be True (is {meta.get('featured')!r})",
-                )
+                if p.name in EXPECTED_UNFEATURED:
+                    self.assertFalse(
+                        meta.get("featured"),
+                        f"{p.name}: should NOT be featured (pulled from "
+                        f"homepage while work continues)",
+                    )
+                else:
+                    self.assertTrue(
+                        meta.get("featured") is True,
+                        f"{p.name}: 'featured' should be True (is {meta.get('featured')!r})",
+                    )
 
     def test_permalink_matches_permalink_convention(self):
         # collections use /:collection/:path/ — so permalink should start with /publication/
@@ -148,27 +160,60 @@ class PublicationFrontMatterTests(unittest.TestCase):
 
 
 class FeaturedSortOrderTests(unittest.TestCase):
-    """Replicate Liquid: site.publications | where: featured | sort: date | reverse"""
+    """Replicate Liquid: split by pin_to_end, sort each group by date desc,
+    then concat — main_pubs first, pinned_pubs at the end."""
 
     EXPECTED_ORDER = [
         "2026-06-01-neurde.md",
         "2026-05-01-powerformer.md",
         "2026-04-21-zero-shot-super-resolution.md",
-        "2025-10-01-popcornn.md",
-        "2024-09-01-nitrobenzene-dissociation.md",
         "2023-10-01-bayesian-inference-gas-diffraction.md",
+        # Pinned to end (user wants the tracking-dissociation physics
+        # paper at the bottom of the featured list regardless of date)
+        "2024-09-01-nitrobenzene-dissociation.md",
     ]
 
-    def test_featured_desc_by_date(self):
-        pubs = []
+    def test_featured_order_respects_pin_to_end(self):
+        main = []
+        pinned = []
         for p in sorted(PUBS_DIR.glob("*.md")):
             meta, _ = parse_front_matter(p)
-            if meta.get("featured") is True:
-                pubs.append((meta["date"], p.name))
-        pubs.sort(key=lambda x: x[0], reverse=True)
-        actual = [name for _, name in pubs]
-        self.assertEqual(actual, self.EXPECTED_ORDER,
-                         f"Featured order mismatch.\nExpected: {self.EXPECTED_ORDER}\nActual:   {actual}")
+            if meta.get("featured") is not True:
+                continue
+            if meta.get("pin_to_end") is True:
+                pinned.append((meta["date"], p.name))
+            else:
+                main.append((meta["date"], p.name))
+        main.sort(key=lambda x: x[0], reverse=True)
+        pinned.sort(key=lambda x: x[0], reverse=True)
+        actual = [name for _, name in main] + [name for _, name in pinned]
+        self.assertEqual(
+            actual, self.EXPECTED_ORDER,
+            f"Featured order mismatch.\n"
+            f"Expected: {self.EXPECTED_ORDER}\n"
+            f"Actual:   {actual}",
+        )
+
+    def test_about_html_implements_pin_to_end_split(self):
+        # The Liquid template in about.html must actually split the list
+        # by pin_to_end and concat main + pinned — otherwise the test
+        # above will pass but the rendered page won't match.
+        about = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
+        self.assertIn(
+            'where_exp: "pub", "pub.pin_to_end != true"', about,
+            "about.html should filter main pubs with "
+            'where_exp: "pub", "pub.pin_to_end != true"',
+        )
+        self.assertIn(
+            'where: "pin_to_end", true', about,
+            "about.html should pick pinned pubs with "
+            'where: "pin_to_end", true',
+        )
+        self.assertIn(
+            "main_pubs | concat: pinned_pubs", about,
+            "about.html should concat main_pubs and pinned_pubs so the "
+            "pinned papers end up at the bottom of the featured list",
+        )
 
 
 class LiquidBalanceTests(unittest.TestCase):
@@ -600,11 +645,18 @@ class AboutPageTests(unittest.TestCase):
                             "about.html still references 'dissertation' — the user asked to remove this")
 
     def test_featured_pub_liquid_loop(self):
-        # Exact filter chain we committed: where featured true, sort date, reverse
+        # The featured-pub loop filters with where: "featured", true.
+        # (The chain is now split into main + pinned_last groups — see
+        # FeaturedSortOrderTests for the ordering contract.)
         self.assertRegex(
             self.body,
-            r'site\.publications\s*\|\s*where:\s*"featured",\s*true\s*\|\s*sort:\s*"date"\s*\|\s*reverse',
-            "about.html is missing the featured-publications filter chain",
+            r'site\.publications\s*\|\s*where:\s*"featured",\s*true',
+            "about.html is missing the featured-publications filter",
+        )
+        self.assertIn(
+            '| sort: "date" | reverse', self.body,
+            "about.html featured-pub loop should still date-sort each "
+            "group (main + pinned) in reverse order",
         )
 
     def test_featured_posts_liquid_loop(self):
