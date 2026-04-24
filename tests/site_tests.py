@@ -91,11 +91,14 @@ class PublicationFrontMatterTests(unittest.TestCase):
     def setUp(self):
         self.files = sorted(PUBS_DIR.glob("*.md"))
 
-    def test_exactly_six_publications(self):
-        names = [p.name for p in self.files]
-        self.assertEqual(
+    def test_minimum_publication_count(self):
+        # At least the originally-curated 6 selected works are still
+        # present; new pubs can be added freely without bumping a
+        # hard-coded count.
+        self.assertGreaterEqual(
             len(self.files), 6,
-            f"Expected 6 publication files, got {len(self.files)}: {names}"
+            f"Expected at least 6 publication files, got {len(self.files)}: "
+            f"{[p.name for p in self.files]}",
         )
 
     def test_no_academicpages_placeholders_remain(self):
@@ -168,6 +171,9 @@ class FeaturedSortOrderTests(unittest.TestCase):
         "2026-05-01-powerformer.md",
         "2026-04-21-zero-shot-super-resolution.md",
         "2023-10-01-bayesian-inference-gas-diffraction.md",
+        "2021-10-08-conformer-specific-photochemistry.md",
+        "2019-06-01-cyclohexadiene-ring-opening.md",
+        "2018-07-06-cf3i-conical-intersection.md",
         # Pinned to end (user wants the tracking-dissociation physics
         # paper at the bottom of the featured list regardless of date)
         "2024-09-01-nitrobenzene-dissociation.md",
