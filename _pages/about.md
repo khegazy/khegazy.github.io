@@ -13,17 +13,25 @@ redirect_from:
 /* ------------------------------------------------------------------
    Homepage-only layout overrides:
    - Hide the theme's <h1 class="page__title"> (our hero renders the name)
-   - Let the content take the full width of #main (no 2/12 right gutter)
-   - Keep #main centered but trim its internal padding so margins are
-     narrower without the page feeling cramped.
+   - Make .page + .page__inner-wrap + .page__content take the FULL width
+     of #main (Susy otherwise reserves 2/12 on the right as a sidebar
+     gutter and adds a 0.5/12 prefix). Every child of .page__content —
+     the hero, h1, pub cards, contact block — then shares the same left
+     and right edges, so margins feel even everywhere on the page.
+   - Keep #main centered and cap it at 1100px with consistent horizontal
+     padding on both sides.
    ------------------------------------------------------------------ */
 .page__title { display: none; }
 #main {
   max-width: 1100px;
-  padding-left: 1.5em;
-  padding-right: 1.5em;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 1.5em !important;
+  padding-right: 1.5em !important;
 }
-.page {
+.page,
+.page__inner-wrap,
+.page__content {
   float: none !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -34,21 +42,20 @@ redirect_from:
 }
 
 /* ------------------------------------------------------------------
-   Homepage hero (photo left, bio right — scrolls with the page)
+   Homepage hero (photo left, bio right — vertically centered)
    ------------------------------------------------------------------ */
 .hero {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 2rem;
   margin: 0.5em 0 2em 0;
 }
 .hero__image {
   flex: 0 0 auto;
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 50%;
+  width: 260px;
+  height: auto;
   border: 1px solid #e5e5e5;
+  border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 .hero__text { flex: 1 1 auto; min-width: 0; }
@@ -68,7 +75,7 @@ redirect_from:
 .hero__bio p { margin: 0 0 0.9em 0; }
 @media (max-width: 700px) {
   .hero { flex-direction: column; align-items: center; text-align: left; }
-  .hero__image { width: 160px; height: 160px; }
+  .hero__image { width: 200px; height: auto; }
   .hero__text { width: 100%; }
   .hero__name { font-size: 1.9em; }
 }

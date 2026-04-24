@@ -267,14 +267,18 @@ class MastheadTests(unittest.TestCase):
                       "masthead.html neutralizer should move .hidden-links items "
                       "back into .visible-links if the theme already shuffled them")
 
-    def test_hamburger_button_hidden_on_desktop(self):
-        # With all items visible, the hamburger should be display: none on
-        # wide screens (kept as a fallback for narrow viewports).
-        self.assertRegex(
+    def test_hamburger_button_removed(self):
+        # The theme's greedy-nav JS relies on $btn.width() to compute
+        # available space. With no <button>, the expression resolves to
+        # NaN — all its comparisons become false and it stops trying to
+        # move links into a hamburger dropdown. That is how we guarantee
+        # the social icons and nav links stay visible.
+        self.assertNotRegex(
             self.text,
-            r"\.masthead\s+\.greedy-nav\s*>\s*button\s*\{[^}]*display:\s*none",
-            "masthead.html should hide the greedy-nav hamburger on desktop "
-            "(display: none on .greedy-nav > button)",
+            r'<button\b[^>]*>\s*<div class="navicon"',
+            "masthead.html should NOT include the greedy-nav hamburger "
+            "<button> — its presence makes the theme JS move links into "
+            "a dropdown. Removing it short-circuits the overflow logic.",
         )
 
     def test_iterates_navigation_data(self):
@@ -401,18 +405,68 @@ class AboutPageTests(unittest.TestCase):
     def test_content_area_widened_on_homepage(self):
         # The theme's .page uses span(10 of 12) with suffix(2 of 12),
         # leaving a large empty right gutter even with no sidebar. The
-        # homepage override should set .page to full width with no margins.
+        # homepage override should reset .page + .page__inner-wrap +
+        # .page__content to full width / no margin / no padding so every
+        # child of .page__content (hero, h1, pub cards, contact block)
+        # shares the same left/right edges.
         self.assertRegex(
             self.body,
-            r"\.page\s*\{[^}]*width:\s*100%",
-            "about.md should override .page to width: 100% so the content "
-            "isn't constrained to 10/12 with a 2/12 right gutter",
+            r"\.page,\s*\.page__inner-wrap,\s*\.page__content\s*\{[^}]*width:\s*100%",
+            "about.md should override .page, .page__inner-wrap, and "
+            ".page__content to width: 100% together — otherwise one of them "
+            "keeps the theme's Susy gutter and shifts content rightward",
         )
         self.assertRegex(
             self.body,
-            r"\.page\s*\{[^}]*float:\s*none",
-            "about.md should override .page to float: none (theme floats it "
-            "for sidebar layout)",
+            r"\.page,\s*\.page__inner-wrap,\s*\.page__content\s*\{[^}]*float:\s*none",
+            "about.md width override should also reset float: none",
+        )
+
+    def test_main_centered_with_consistent_padding(self):
+        # #main needs explicit auto left/right margins so the max-width
+        # cap renders as an even gutter on both sides of the page.
+        self.assertRegex(
+            self.body,
+            r"#main\s*\{[^}]*margin-left:\s*auto",
+            "about.md #main override should set margin-left: auto so the "
+            "capped content is horizontally centered",
+        )
+        self.assertRegex(
+            self.body,
+            r"#main\s*\{[^}]*margin-right:\s*auto",
+            "about.md #main override should set margin-right: auto",
+        )
+
+    def test_hero_image_is_rectangular(self):
+        # User wants the full rectangular profile.png, not a circular crop.
+        # Guard against reintroducing border-radius: 50% or object-fit: cover.
+        self.assertNotRegex(
+            self.body,
+            r"\.hero__image\s*\{[^}]*border-radius:\s*50%",
+            "about.md .hero__image should NOT use border-radius: 50% — "
+            "the user wants the full rectangular image, not a circular crop",
+        )
+        self.assertNotRegex(
+            self.body,
+            r"\.hero__image\s*\{[^}]*object-fit:\s*cover",
+            "about.md .hero__image should NOT use object-fit: cover — "
+            "the user wants the full rectangular image without cropping",
+        )
+
+    def test_hero_is_vertically_centered(self):
+        # The user wants the photo vertically centered with the bio, not
+        # anchored to the top of the text column.
+        self.assertRegex(
+            self.body,
+            r"\.hero\s*\{[^}]*align-items:\s*center",
+            "about.md .hero should use align-items: center so the photo "
+            "is vertically aligned with the midpoint of the bio text",
+        )
+        self.assertNotRegex(
+            self.body,
+            r"\.hero\s*\{[^}]*align-items:\s*flex-start",
+            "about.md .hero should NOT use align-items: flex-start — that "
+            "anchors the photo to the top of the text, which looks awkward",
         )
 
     def test_hero_has_name_and_subtitle(self):
@@ -728,13 +782,21 @@ class PublicationVenueSanityTests(unittest.TestCase):
 
 
 class EmptyStatesTests(unittest.TestCase):
-    """Sanity: since there are no blog posts yet, the 'Selected Blogs'
-    section should gracefully show the empty-state message."""
+    """The 'Selected Blogs' section should gracefully show an
+    empty-state message when no posts are marked as featured."""
 
-    def test_posts_dir_is_empty(self):
-        posts = list(POSTS_DIR.glob("*.md"))
-        self.assertEqual(posts, [],
-                         f"_posts should be empty (placeholders removed), found {posts}")
+    def test_no_academicpages_placeholder_posts(self):
+        # The original AcademicPages template shipped placeholder posts
+        # ("2012-08-14-blog-post-1.md" etc.). Those should be gone.
+        names = {p.name for p in POSTS_DIR.glob("*.md")}
+        placeholders = {
+            "2012-08-14-blog-post-1.md",
+            "2013-08-14-blog-post-2.md",
+            "2014-08-14-blog-post-3.md",
+            "2015-08-14-blog-post-4.md",
+        }
+        leftover = names & placeholders
+        self.assertFalse(leftover, f"Placeholder posts still present: {leftover}")
 
     def test_empty_state_fallback_present(self):
         text = (PAGES_DIR / "about.md").read_text(encoding="utf-8")

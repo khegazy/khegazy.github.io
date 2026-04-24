@@ -42,13 +42,6 @@
 .masthead .greedy-nav .visible-links li:first-child { font-weight: normal; }
 .masthead .greedy-nav .visible-links li:first-child a { margin-left: 0; }
 
-/* Hide greedy-nav hamburger on wide screens — all items fit in the bar.
-   Keep it available on narrow viewports as a fallback. */
-.masthead .greedy-nav > button { display: none; }
-@media (max-width: 600px) {
-  .masthead .greedy-nav > button { display: inline-block; }
-}
-
 /* Social icons: tight spacing, no underline-on-hover animation. */
 .masthead__menu-item--social a {
   padding: 0 0.25em !important;
@@ -78,7 +71,6 @@
   <div class="masthead__inner-wrap">
     <div class="masthead__menu">
       <nav id="site-nav" class="greedy-nav">
-        <button><div class="navicon"></div></button>
         <ul class="visible-links">
           {% if site.author.github %}
           <li class="masthead__menu-item masthead__menu-item--social"><a href="https://github.com/{{ site.author.github }}" aria-label="GitHub" title="GitHub"><i class="fab fa-github" aria-hidden="true"></i></a></li>
@@ -113,11 +105,13 @@
 </div>
 
 <script>
-/* Neutralize the theme's greedy-nav overflow logic.
-   main.min.js defines updateNav() globally and calls it on load + resize
-   to move overflowing <li>s into a hamburger dropdown. With our flex
-   layout that check is unreliable, so we disable it — all items stay in
-   .visible-links. Runs after main.min.js (via DOMContentLoaded / load). */
+/* The theme's greedy-nav JS (main.min.js -> updateNav()) moves links into
+   a hamburger dropdown when .visible-links overflows the nav. Because we
+   removed the hamburger <button>, updateNav's $btn selector is empty and
+   its overflow check resolves to NaN — every comparison becomes false so
+   no items get shuffled. This safety net restores anything the JS did
+   manage to move (shouldn't happen without a button, but cheap insurance)
+   and replaces updateNav with a no-op to silence resize-handler churn. */
 (function () {
   function disableGreedyNav() {
     var vlinks = document.querySelector('#site-nav .visible-links');
@@ -135,8 +129,6 @@
   } else {
     disableGreedyNav();
   }
-  // Also run on window load — main.min.js may re-invoke updateNav after
-  // DOMContentLoaded, so restore items one more time to be safe.
   window.addEventListener('load', disableGreedyNav);
 })();
 </script>
