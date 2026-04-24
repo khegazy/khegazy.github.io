@@ -230,28 +230,51 @@ class MastheadTests(unittest.TestCase):
                 self.assertIn(needle, self.text,
                               f"masthead.html missing reference to {needle}")
 
-    def test_spacer_cell_present(self):
-        # The spacer <li> with width: 100% is what pushes nav links to the
-        # right side under the theme's display: table layout.
-        self.assertIn("masthead__menu-item--spacer", self.text,
-                      "masthead.html missing the spacer <li> that right-aligns nav")
-
-    def test_spacer_cell_has_full_width(self):
+    def test_uses_flex_layout_for_nav(self):
+        # We use flex (not the spacer-cell table hack) so nav items stay
+        # visible. A helper JS block neutralizes greedy-nav's overflow JS.
         self.assertRegex(
             self.text,
-            r"\.masthead__menu-item--spacer\b[^}]*width:\s*100%",
-            "masthead.html spacer cell must have width: 100% to push nav right",
+            r"\.visible-links\s*\{[^}]*display:\s*flex",
+            "masthead.html should use display: flex on .visible-links",
         )
 
-    def test_does_not_override_to_flex(self):
-        # Earlier version forced display: flex which broke greedy-nav JS
-        # (it compares $vlinks.width() to the nav width). Make sure we're
-        # not reintroducing that override.
-        self.assertNotRegex(
+    def test_first_nav_item_pushed_right(self):
+        # margin-left: auto on the first nav <li> pushes nav items to the
+        # right side of the bar, after the social icons.
+        self.assertRegex(
             self.text,
-            r"\.visible-links\s*\{[^}]*display:\s*flex",
-            "masthead.html overrides .visible-links to display: flex — that "
-            "breaks the greedy-nav overflow JS. Use display: table + spacer instead.",
+            r"\.masthead__menu-item--nav:first-of-type\s*\{[^}]*margin-left:\s*auto",
+            "masthead.html should push nav items right via margin-left: auto "
+            "on .masthead__menu-item--nav:first-of-type",
+        )
+
+    def test_no_spacer_cell(self):
+        # The spacer <li> broke greedy-nav's overflow detection by making
+        # .visible-links always full-width. Flex layout replaces it.
+        self.assertNotIn("masthead__menu-item--spacer", self.text,
+                         "masthead.html should no longer include the spacer "
+                         "<li> — it caused greedy-nav to shove items into the "
+                         "hamburger. Flex + margin-left: auto is the fix.")
+
+    def test_greedy_nav_is_neutralized(self):
+        # A short JS block overrides window.updateNav to no-op so the theme
+        # doesn't move nav items into the hamburger dropdown.
+        self.assertIn("window.updateNav", self.text,
+                      "masthead.html should override window.updateNav to disable "
+                      "the theme's greedy-nav overflow logic")
+        self.assertIn("hidden-links", self.text,
+                      "masthead.html neutralizer should move .hidden-links items "
+                      "back into .visible-links if the theme already shuffled them")
+
+    def test_hamburger_button_hidden_on_desktop(self):
+        # With all items visible, the hamburger should be display: none on
+        # wide screens (kept as a fallback for narrow viewports).
+        self.assertRegex(
+            self.text,
+            r"\.masthead\s+\.greedy-nav\s*>\s*button\s*\{[^}]*display:\s*none",
+            "masthead.html should hide the greedy-nav hamburger on desktop "
+            "(display: none on .greedy-nav > button)",
         )
 
     def test_iterates_navigation_data(self):
@@ -338,6 +361,58 @@ class AboutPageTests(unittest.TestCase):
             self.body,
             r'<img\s+class="hero__image"[^>]*profile\.png',
             "about.md hero should include an <img class='hero__image'> pointing at profile.png",
+        )
+
+    def test_hero_image_precedes_hero_text(self):
+        # The user wants the photo on the LEFT of the bio.
+        # In a horizontal flex row, that means the <img> must come before
+        # the .hero__text <div> in source order.
+        img_idx = self.body.find('class="hero__image"')
+        text_idx = self.body.find('class="hero__text"')
+        self.assertNotEqual(img_idx, -1, "hero__image missing")
+        self.assertNotEqual(text_idx, -1, "hero__text missing")
+        self.assertLess(
+            img_idx, text_idx,
+            "hero__image must appear before hero__text in source order so the "
+            "photo renders on the LEFT of the bio (flex row).",
+        )
+
+    def test_hero_mobile_stacks_without_reversing(self):
+        # On narrow viewports the flex direction should be 'column' (image
+        # on top, bio below) — NOT 'column-reverse', which flips the user's
+        # requested image-on-top ordering.
+        self.assertNotRegex(
+            self.body,
+            r"flex-direction:\s*column-reverse",
+            "about.md @media block must use flex-direction: column "
+            "(not column-reverse) so the photo stays above the bio on mobile",
+        )
+
+    def test_page_title_is_hidden_on_homepage(self):
+        # The theme's single.html renders <h1 class="page__title"> from the
+        # front matter title, which duplicated the hero name. Hide it on
+        # the homepage.
+        self.assertRegex(
+            self.body,
+            r"\.page__title\s*\{[^}]*display:\s*none",
+            "about.md should hide the theme's duplicate .page__title heading",
+        )
+
+    def test_content_area_widened_on_homepage(self):
+        # The theme's .page uses span(10 of 12) with suffix(2 of 12),
+        # leaving a large empty right gutter even with no sidebar. The
+        # homepage override should set .page to full width with no margins.
+        self.assertRegex(
+            self.body,
+            r"\.page\s*\{[^}]*width:\s*100%",
+            "about.md should override .page to width: 100% so the content "
+            "isn't constrained to 10/12 with a 2/12 right gutter",
+        )
+        self.assertRegex(
+            self.body,
+            r"\.page\s*\{[^}]*float:\s*none",
+            "about.md should override .page to float: none (theme floats it "
+            "for sidebar layout)",
         )
 
     def test_hero_has_name_and_subtitle(self):

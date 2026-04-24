@@ -11,13 +11,45 @@ redirect_from:
 
 <style>
 /* ------------------------------------------------------------------
-   Homepage hero (bio + photo, scrolls with the page — not a sidebar)
+   Homepage-only layout overrides:
+   - Hide the theme's <h1 class="page__title"> (our hero renders the name)
+   - Let the content take the full width of #main (no 2/12 right gutter)
+   - Keep #main centered but trim its internal padding so margins are
+     narrower without the page feeling cramped.
+   ------------------------------------------------------------------ */
+.page__title { display: none; }
+#main {
+  max-width: 1100px;
+  padding-left: 1.5em;
+  padding-right: 1.5em;
+}
+.page {
+  float: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* ------------------------------------------------------------------
+   Homepage hero (photo left, bio right — scrolls with the page)
    ------------------------------------------------------------------ */
 .hero {
   display: flex;
   align-items: flex-start;
   gap: 2rem;
   margin: 0.5em 0 2em 0;
+}
+.hero__image {
+  flex: 0 0 auto;
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 .hero__text { flex: 1 1 auto; min-width: 0; }
 .hero__name {
@@ -34,17 +66,8 @@ redirect_from:
 }
 .hero__bio { font-size: 1em; line-height: 1.6; }
 .hero__bio p { margin: 0 0 0.9em 0; }
-.hero__image {
-  flex: 0 0 auto;
-  width: 200px;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 50%;
-  border: 1px solid #e5e5e5;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
 @media (max-width: 700px) {
-  .hero { flex-direction: column-reverse; align-items: center; text-align: left; }
+  .hero { flex-direction: column; align-items: center; text-align: left; }
   .hero__image { width: 160px; height: 160px; }
   .hero__text { width: 100%; }
   .hero__name { font-size: 1.9em; }
@@ -158,6 +181,7 @@ redirect_from:
 </style>
 
 <section class="hero">
+  <img class="hero__image" src="{{ '/images/profile.png' | relative_url }}" alt="Kareem Hegazy"/>
   <div class="hero__text">
     <h1 class="hero__name">Kareem Hegazy</h1>
     <p class="hero__subtitle">Postdoctoral Researcher · UC Berkeley · Lawrence Berkeley National Lab · ICSI</p>
@@ -167,7 +191,6 @@ I am a postdoctoral researcher at [UC Berkeley](https://statistics.berkeley.edu/
 I am broadly interested in the intersection of physics and machine learning — LLMs for time series, ML for thermodynamic processes and PDE modeling, ML chemical potentials, and inverse problems.
     </div>
   </div>
-  <img class="hero__image" src="{{ '/images/profile.png' | relative_url }}" alt="Kareem Hegazy"/>
 </section>
 
 <h1 id="publications">Selected Publications</h1>

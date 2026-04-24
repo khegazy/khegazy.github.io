@@ -16,22 +16,38 @@
 }
 
 /* ------------------------------------------------------------------
-   Layout: social icons on the left, nav links on the right.
-   Uses the theme's native display: table with a full-width spacer
-   cell to right-align the navigation items — this keeps the
-   greedy-nav overflow JS happy.
+   Nav layout: override the theme's display: table layout with flex,
+   so social icons sit on the left and nav links push to the right
+   via margin-left: auto on the first nav item. Also make sure all
+   items are always visible (no hamburger overflow on desktop).
    ------------------------------------------------------------------ */
-.masthead .greedy-nav .visible-links .masthead__menu-item--spacer {
+.masthead .greedy-nav .visible-links {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  list-style: none;
+  margin: 0;
+  padding: 0;
   width: 100%;
-  pointer-events: none;
 }
-.masthead .greedy-nav .visible-links .masthead__menu-item--spacer a {
-  display: none;
+.masthead .greedy-nav .visible-links > li {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
 }
-
-/* Un-bold the first cell — theme bolds it assuming it is a site title. */
+.masthead .greedy-nav .visible-links .masthead__menu-item--nav:first-of-type {
+  margin-left: auto;
+}
 .masthead .greedy-nav .visible-links li:first-child { font-weight: normal; }
 .masthead .greedy-nav .visible-links li:first-child a { margin-left: 0; }
+
+/* Hide greedy-nav hamburger on wide screens — all items fit in the bar.
+   Keep it available on narrow viewports as a fallback. */
+.masthead .greedy-nav > button { display: none; }
+@media (max-width: 600px) {
+  .masthead .greedy-nav > button { display: inline-block; }
+}
 
 /* Social icons: tight spacing, no underline-on-hover animation. */
 .masthead__menu-item--social a {
@@ -40,10 +56,6 @@
   font-size: 1.1rem;
 }
 .masthead__menu-item--social a:before { display: none !important; }
-
-@media (max-width: 600px) {
-  .masthead .greedy-nav .visible-links .masthead__menu-item--spacer { display: none; }
-}
 
 /* ------------------------------------------------------------------
    Sitewide scroll progress bar — anchored to the bottom of the
@@ -84,8 +96,6 @@
           <li class="masthead__menu-item masthead__menu-item--social"><a href="mailto:{{ site.author.email }}" aria-label="Email" title="Email"><i class="fas fa-envelope" aria-hidden="true"></i></a></li>
           {% endif %}
 
-          <li class="masthead__menu-item masthead__menu-item--spacer" aria-hidden="true"><a href="#" tabindex="-1">&nbsp;</a></li>
-
           {% for link in site.data.navigation.main %}
             {% if link.url contains 'http' %}
               {% assign domain = '' %}
@@ -103,6 +113,36 @@
 </div>
 
 <script>
+/* Neutralize the theme's greedy-nav overflow logic.
+   main.min.js defines updateNav() globally and calls it on load + resize
+   to move overflowing <li>s into a hamburger dropdown. With our flex
+   layout that check is unreliable, so we disable it — all items stay in
+   .visible-links. Runs after main.min.js (via DOMContentLoaded / load). */
+(function () {
+  function disableGreedyNav() {
+    var vlinks = document.querySelector('#site-nav .visible-links');
+    var hlinks = document.querySelector('#site-nav .hidden-links');
+    if (vlinks && hlinks) {
+      while (hlinks.firstChild) vlinks.appendChild(hlinks.firstChild);
+      hlinks.classList.add('hidden');
+    }
+    if (typeof window.updateNav === 'function') {
+      window.updateNav = function () {};
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', disableGreedyNav);
+  } else {
+    disableGreedyNav();
+  }
+  // Also run on window load — main.min.js may re-invoke updateNav after
+  // DOMContentLoaded, so restore items one more time to be safe.
+  window.addEventListener('load', disableGreedyNav);
+})();
+</script>
+
+<script>
+/* Sitewide scroll progress bar — drives #scroll-progress width. */
 (function () {
   var bar = document.getElementById('scroll-progress');
   if (!bar) return;
