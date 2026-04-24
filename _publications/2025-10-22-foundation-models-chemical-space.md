@@ -8,8 +8,8 @@ excerpt: "A foundation-model approach to discovery and exploration in chemical s
 date: 2025-10-22
 venue: "Submitted to <i>Nature</i>"
 journal: "Nature"
-authors: "K. Hegazy, et al."
-citation: "K. Hegazy, et al. (2025). &quot;Foundation Models for Discovery and Exploration in Chemical Space.&quot; Submitted to <i>Nature</i>. arXiv:2510.18900."
+authors: "A. Wadell, A. Bhutani, V. Azumah, ..., K. Hegazy, et al."
+citation: "A. Wadell, A. Bhutani, V. Azumah, et al. (2025). &quot;Foundation Models for Discovery and Exploration in Chemical Space.&quot; Submitted to <i>Nature</i>. arXiv:2510.18900."
 paperurl: ""
 arxivurl: "https://arxiv.org/abs/2510.18900"
 codeurl: ""
