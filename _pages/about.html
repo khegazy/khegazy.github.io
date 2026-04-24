@@ -213,6 +213,39 @@ redirect_from:
 .scholar-callout__link:hover { color: #000; background: #f3f4f6; }
 
 /* ------------------------------------------------------------------
+   "Get in touch" icon links — centered, matching the masthead icons
+   ------------------------------------------------------------------ */
+.contact-links {
+  list-style: none;
+  margin: 1.25em 0 2em 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.4rem;
+}
+.contact-links li { margin: 0; padding: 0; }
+.contact-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4em;
+  height: 2.4em;
+  font-size: 1.4em;
+  color: #333;
+  text-decoration: none;
+  border-radius: 50%;
+  transition: color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+.contact-links a:hover {
+  color: #000;
+  background: #f3f4f6;
+  transform: translateY(-1px);
+}
+/* Kill the theme's underline-on-hover pseudo so icons aren't decorated */
+.contact-links a::before { display: none !important; }
+
+/* ------------------------------------------------------------------
    Blog card (with thumbnail)
    ------------------------------------------------------------------ */
 .pub-card { display: flex; gap: 1.25rem; align-items: flex-start; margin: 1.25rem 0; width: 100%; }
@@ -318,12 +351,22 @@ redirect_from:
 
 <h1 id="contact">Get in touch</h1>
 
-<p>
-  Email: <a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a><br/>
-  <a href="https://github.com/{{ site.author.github }}">GitHub</a> &nbsp;&middot;&nbsp;
-  <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}">LinkedIn</a> &nbsp;&middot;&nbsp;
-  <a href="https://twitter.com/{{ site.author.twitter }}">Twitter</a> &nbsp;&middot;&nbsp;
-  <a href="{{ site.author.googlescholar }}">Google Scholar</a>
-</p>
+<ul class="contact-links">
+  {% if site.author.github %}
+  <li><a href="https://github.com/{{ site.author.github }}" aria-label="GitHub" title="GitHub"><i class="fab fa-github" aria-hidden="true"></i></a></li>
+  {% endif %}
+  {% if site.author.linkedin %}
+  <li><a href="https://www.linkedin.com/in/{{ site.author.linkedin }}" aria-label="LinkedIn" title="LinkedIn"><i class="fab fa-linkedin" aria-hidden="true"></i></a></li>
+  {% endif %}
+  {% if site.author.twitter %}
+  <li><a href="https://twitter.com/{{ site.author.twitter }}" aria-label="Twitter" title="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a></li>
+  {% endif %}
+  {% if site.author.googlescholar %}
+  <li><a href="{{ site.author.googlescholar }}" aria-label="Google Scholar" title="Google Scholar"><i class="fas fa-graduation-cap" aria-hidden="true"></i></a></li>
+  {% endif %}
+  {% if site.author.email %}
+  <li><a href="mailto:{{ site.author.email }}" aria-label="Email" title="Email"><i class="fas fa-envelope" aria-hidden="true"></i></a></li>
+  {% endif %}
+</ul>
 
 </div>

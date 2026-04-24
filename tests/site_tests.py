@@ -696,6 +696,52 @@ class AboutPageTests(unittest.TestCase):
         self.assertIn("{{ site.author.email }}", self.body,
                       "about.html contact should use {{ site.author.email }}")
 
+    def test_contact_section_uses_icon_links(self):
+        # User asked for the contact section to show icon buttons (same
+        # icons as the masthead) instead of spelling out "GitHub",
+        # "LinkedIn", etc. — and to be centered.
+        contact_idx = self.body.find('id="contact"')
+        self.assertNotEqual(contact_idx, -1, "contact section missing")
+        tail = self.body[contact_idx:]
+
+        # Should no longer spell out site names as link text
+        for txt in (">GitHub<", ">LinkedIn<", ">Twitter<", ">Google Scholar<"):
+            with self.subTest(removed=txt):
+                self.assertNotIn(
+                    txt, tail,
+                    f"contact section still spells out {txt!r} — the user "
+                    f"asked for icon links instead",
+                )
+
+        # Should render the same Font Awesome icons as the masthead
+        for icon in (
+            "fab fa-github",
+            "fab fa-linkedin",
+            "fab fa-twitter",
+            "fas fa-graduation-cap",
+            "fas fa-envelope",
+        ):
+            with self.subTest(icon=icon):
+                self.assertIn(
+                    icon, tail,
+                    f"contact section missing '{icon}' icon — should "
+                    f"mirror the masthead's social icon set",
+                )
+
+    def test_contact_links_are_centered(self):
+        self.assertRegex(
+            self.body,
+            r"\.contact-links\s*\{[^}]*justify-content:\s*center",
+            "about.html .contact-links should be centered via "
+            "justify-content: center on the flex container",
+        )
+        self.assertRegex(
+            self.body,
+            r"\.contact-links\s*\{[^}]*display:\s*flex",
+            "about.html .contact-links should use display: flex (so "
+            "justify-content: center takes effect)",
+        )
+
     def test_bio_paragraph_has_key_affiliations(self):
         # After the rewrite, the short bio should still name these.
         for needle in ("UC Berkeley", "Stanford", "Michigan", "Google X"):
