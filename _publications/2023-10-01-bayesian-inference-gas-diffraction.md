@@ -3,6 +3,7 @@ title: "Applying Bayesian Inference and Deterministic Anisotropy to Retrieve the
 collection: publications
 permalink: /publication/2023-10-01-bayesian-inference-gas-diffraction
 featured: true
+pin_to_end: true
 thumbnail: /images/publications/bigr.png
 excerpt: "Novel Bayesian statistical framework that transforms gas-phase diffraction into 3D molecular images — 100× resolution improvement, no simulation bottleneck."
 date: 2023-10-01

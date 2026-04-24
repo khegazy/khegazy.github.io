@@ -171,12 +171,12 @@ class FeaturedSortOrderTests(unittest.TestCase):
         "2026-05-01-powerformer.md",
         "2026-04-21-zero-shot-super-resolution.md",
         "2025-10-22-foundation-models-chemical-space.md",
-        "2023-10-01-bayesian-inference-gas-diffraction.md",
         "2021-10-08-conformer-specific-photochemistry.md",
         "2019-06-01-cyclohexadiene-ring-opening.md",
         "2018-07-06-cf3i-conical-intersection.md",
-        # Pinned to end (user wants the tracking-dissociation physics
-        # paper at the bottom of the featured list regardless of date)
+        # Pinned group, sorted by date ASC: older legacy work above,
+        # newer legacy work at the very bottom.
+        "2023-10-01-bayesian-inference-gas-diffraction.md",
         "2024-09-01-nitrobenzene-dissociation.md",
     ]
 
@@ -191,8 +191,11 @@ class FeaturedSortOrderTests(unittest.TestCase):
                 pinned.append((meta["date"], p.name))
             else:
                 main.append((meta["date"], p.name))
+        # Main group: date DESC (newest first).
         main.sort(key=lambda x: x[0], reverse=True)
-        pinned.sort(key=lambda x: x[0], reverse=True)
+        # Pinned group: date ASC (oldest first, so newest pinned item
+        # lands at the very bottom of the full list).
+        pinned.sort(key=lambda x: x[0])
         actual = [name for _, name in main] + [name for _, name in pinned]
         self.assertEqual(
             actual, self.EXPECTED_ORDER,
@@ -670,8 +673,16 @@ class AboutPageTests(unittest.TestCase):
         )
         self.assertIn(
             '| sort: "date" | reverse', self.body,
-            "about.html featured-pub loop should still date-sort each "
-            "group (main + pinned) in reverse order",
+            "about.html main featured-pub loop should sort by date "
+            "descending (| sort: 'date' | reverse)",
+        )
+        # The pinned group sorts by date ASC (no | reverse) so the
+        # newest pinned paper ends up at the very bottom.
+        self.assertRegex(
+            self.body,
+            r'where:\s*"pin_to_end",\s*true\s*\|\s*sort:\s*"date"\s*%\}',
+            'pinned featured-pub loop should sort by date ASC '
+            '(| sort: "date" without | reverse)',
         )
 
     def test_featured_posts_liquid_loop(self):

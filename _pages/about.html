@@ -300,12 +300,14 @@ redirect_from:
 {% comment %}
   Featured publications: render date-desc, but any pub with
   `pin_to_end: true` in its front matter is moved to the bottom of the
-  list regardless of date. Useful for de-emphasizing older/off-topic
-  work while keeping it visible.
+  list regardless of date. Within the pinned group we sort by date
+  ASCENDING, so the oldest pinned paper sits higher and the newest
+  lands at the very bottom — this makes the tail read as a second,
+  older-legacy-work section layered beneath the current work.
 {% endcomment %}
 {% assign all_featured = site.publications | where: "featured", true %}
 {% assign main_pubs = all_featured | where_exp: "pub", "pub.pin_to_end != true" | sort: "date" | reverse %}
-{% assign pinned_pubs = all_featured | where: "pin_to_end", true | sort: "date" | reverse %}
+{% assign pinned_pubs = all_featured | where: "pin_to_end", true | sort: "date" %}
 {% assign featured_pubs = main_pubs | concat: pinned_pubs %}
 {% if featured_pubs.size > 0 %}
   {% for pub in featured_pubs %}
