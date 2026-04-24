@@ -643,20 +643,113 @@ class AboutPageTests(unittest.TestCase):
         )
 
     def test_pub_card_renders_action_buttons(self):
-        # Each featured pub card should conditionally render
-        # arXiv / Paper / Code / Blog buttons from the matching URL fields.
-        for label, field in (
-            ("arXiv", "arxivurl"),
-            ("Paper", "paperurl"),
-            ("Code", "codeurl"),
-            ("Blog", "blogurl"),
+        # After the redesign, each pub card renders exactly three buttons
+        # in this order:
+        #   1. Journal — paperurl if published, gray disabled span if not
+        #   2. Blog    — only if blogurl is set
+        #   3. arXiv   — only if arxivurl is set
+        # (Paper and Code buttons were removed; the journal name IS the
+        # paper link.)
+        self.assertRegex(
+            self.body,
+            r"pub-action--journal",
+            "about.html pub cards should render a journal button "
+            "(.pub-action--journal) as the primary action",
+        )
+        self.assertRegex(
+            self.body,
+            r"pub\.blogurl.*Blog",
+            "about.html should still render the Blog button from pub.blogurl",
+        )
+        self.assertRegex(
+            self.body,
+            r"pub\.arxivurl.*arXiv",
+            "about.html should still render the arXiv button from pub.arxivurl",
+        )
+
+    def test_pub_card_button_order_is_journal_blog_arxiv(self):
+        # The user asked for the exact button order: Journal, then Blog,
+        # then arXiv. Check on button-rendering tokens (the href=...
+        # calls inside the actions block) rather than on pub.xxurl
+        # references, since pub.arxivurl ALSO appears earlier in the
+        # href-fallback chain and would pass the test incorrectly.
+        journal_idx = self.body.find("pub-action--journal")
+        blog_idx = self.body.find('href="{{ pub.blogurl }}"')
+        arxiv_idx = self.body.find('href="{{ pub.arxivurl }}"')
+        for name, idx in (
+            ("journal", journal_idx),
+            ("blog", blog_idx),
+            ("arxiv", arxiv_idx),
         ):
-            with self.subTest(action=label):
-                self.assertRegex(
-                    self.body,
-                    rf'pub\.{field}.*{label}',
-                    f"about.html should render a '{label}' action button from pub.{field}",
-                )
+            self.assertNotEqual(idx, -1, f"pub card template missing {name} button")
+        self.assertLess(
+            journal_idx, blog_idx,
+            "Journal button should render before the Blog button in the pub card",
+        )
+        self.assertLess(
+            blog_idx, arxiv_idx,
+            "Blog button should render before the arXiv button in the pub card",
+        )
+
+    def test_pub_card_paper_and_code_buttons_removed(self):
+        # The user's new design has no standalone "Paper" button (the
+        # journal IS the paper link) and no "Code" button at all.
+        self.assertNotRegex(
+            self.body,
+            r'>Paper<',
+            "about.html pub cards should NOT render a standalone 'Paper' "
+            "button — the journal button is the paper link",
+        )
+        self.assertNotRegex(
+            self.body,
+            r'>Code<',
+            "about.html pub cards should NOT render a 'Code' button "
+            "(removed in the simplified 3-button design)",
+        )
+
+    def test_pub_card_journal_disabled_when_no_paperurl(self):
+        # Papers without a paperurl must render the journal button as a
+        # disabled <span> (gray, unclickable) instead of an <a>.
+        self.assertIn(
+            "pub-action--disabled", self.body,
+            "about.html should render unpublished papers' journal as "
+            "<span class='pub-action--disabled'> (gray, not clickable)",
+        )
+        self.assertRegex(
+            self.body,
+            r'<span\s+class="pub-action\s+pub-action--journal\s+pub-action--disabled"',
+            "the disabled journal button must be a <span>, not an <a>, "
+            "so it cannot be clicked",
+        )
+
+    def test_pub_card_excerpt_renders_after_actions(self):
+        # User requested excerpt on the BOTTOM of the card (below the
+        # button row, not above it). Check source order.
+        excerpt_idx = self.body.find("pub.excerpt")
+        actions_idx = self.body.find('class="pub-actions"')
+        self.assertNotEqual(excerpt_idx, -1, "pub card missing excerpt")
+        self.assertNotEqual(actions_idx, -1, "pub card missing actions row")
+        self.assertLess(
+            actions_idx, excerpt_idx,
+            "pub card actions row must render BEFORE the excerpt — "
+            "the user wants the excerpt on the bottom of the card",
+        )
+
+    def test_pub_card_standalone_venue_line_removed(self):
+        # The old "pub-venue" italic line under authors was replaced by
+        # the journal button on publication cards. Check only the
+        # pub-link-card block (blog cards use their own .pub-card with a
+        # different .pub-venue for the date line — that's fine).
+        pub_card_start = self.body.find('class="pub-link-card"')
+        pub_card_end = self.body.find("</div>", pub_card_start)
+        self.assertGreater(pub_card_start, -1, "pub-link-card block missing")
+        pub_card_block = self.body[pub_card_start:pub_card_end]
+        self.assertNotRegex(
+            pub_card_block,
+            r'<p\s+class="pub-venue"',
+            "about.html pub-link-card should no longer render a standalone "
+            "<p class='pub-venue'> line — the journal button replaces it",
+        )
 
     def test_pub_action_buttons_above_stretched_link(self):
         # The .pub-actions container needs z-index higher than the stretched
@@ -948,6 +1041,27 @@ class PublicationActionFieldsTests(unittest.TestCase):
     add arxivurl in a new pub file would silently hide the arXiv button."""
 
     ACTION_FIELDS = ("arxivurl", "paperurl", "codeurl", "blogurl")
+
+    def test_featured_pubs_declare_journal(self):
+        # The redesigned pub card uses pub.journal as the clean label on
+        # the first (journal) button. If unset, the Liquid falls back to
+        # strip_html(pub.venue), which still works but may include "(2023,
+        # 6, 325)" noise. Guard against new pubs forgetting this field.
+        for p in sorted(PUBS_DIR.glob("*.md")):
+            meta, _ = parse_front_matter(p)
+            if not meta.get("featured"):
+                continue
+            with self.subTest(file=p.name):
+                self.assertIn(
+                    "journal", meta,
+                    f"{p.name}: featured pubs should declare 'journal' "
+                    f"with the clean button label (e.g. 'Communications "
+                    f"Physics' or 'ICLR 2026')",
+                )
+                self.assertTrue(
+                    str(meta["journal"]).strip(),
+                    f"{p.name}: 'journal' should not be blank",
+                )
 
     def test_featured_pubs_declare_action_fields(self):
         for p in sorted(PUBS_DIR.glob("*.md")):

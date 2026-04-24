@@ -140,35 +140,30 @@ redirect_from:
 }
 .pub-link-card:hover .pub-title a { text-decoration: underline; }
 .pub-link-card .pub-authors {
-  margin: 0.1em 0;
+  margin: 0.1em 0 0.4em 0;
   font-size: 0.95em;
   color: #444;
 }
-.pub-link-card .pub-venue {
-  margin: 0.1em 0;
-  font-size: 0.9em;
-  color: #666;
-  font-style: italic;
-}
 .pub-link-card .pub-excerpt {
-  margin: 0.5em 0 0 0;
+  margin: 0.55em 0 0 0;
   font-size: 0.95em;
   color: #333;
   line-height: 1.5;
 }
 
-/* Action buttons — arXiv / Paper / Code / Blog */
+/* Action-button row: [Journal | Blog | arXiv] — sits above the excerpt.
+   z-index: 2 keeps buttons clickable above the stretched title link. */
 .pub-link-card .pub-actions {
   position: relative;
-  z-index: 2;            /* above the stretched title link */
-  margin: 0.6em 0 0 0;
+  z-index: 2;
+  margin: 0.3em 0 0 0;
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
 }
 .pub-link-card .pub-action {
   display: inline-block;
-  padding: 0.15em 0.7em;
+  padding: 0.2em 0.75em;
   font-size: 0.82em;
   font-weight: 500;
   color: #333 !important;
@@ -176,11 +171,32 @@ redirect_from:
   border: 1px solid #d9dbe0;
   border-radius: 4px;
   text-decoration: none !important;
+  line-height: 1.4;
 }
 .pub-link-card .pub-action:hover {
   background: #e9ebf0;
   border-color: #bfc3cc;
   color: #111 !important;
+}
+
+/* The journal button has a slightly more prominent look — it's the
+   primary action when the paper is out. */
+.pub-link-card .pub-action--journal {
+  font-weight: 600;
+}
+
+/* Disabled state: paper is not yet published (no paperurl). Renders as
+   a <span>, not an <a>, so it's unclickable; gray text, no hover. */
+.pub-link-card .pub-action--disabled {
+  color: #9aa0a6 !important;
+  background: #f7f8fa;
+  border-color: #e5e7eb;
+  cursor: not-allowed;
+}
+.pub-link-card .pub-action--disabled:hover {
+  color: #9aa0a6 !important;
+  background: #f7f8fa;
+  border-color: #e5e7eb;
 }
 
 /* ------------------------------------------------------------------
@@ -290,24 +306,26 @@ redirect_from:
     {% else %}
       {% assign pub_href = pub.permalink | relative_url %}
     {% endif %}
+    {% comment %}
+      Label for the first (journal) button. Prefer an explicit `journal`
+      field; otherwise fall back to the venue string with its <i> tags
+      stripped. If the paper is not yet published (no paperurl), the
+      button renders as a disabled <span> with gray text.
+    {% endcomment %}
+    {% assign journal_label = pub.journal | default: pub.venue | strip_html | strip %}
 <div class="pub-link-card">
   <h4 class="pub-title"><a href="{{ pub_href }}">{{ pub.title }}</a></h4>
   {% if pub.authors %}<p class="pub-authors">{{ pub.authors }}</p>{% endif %}
-  {% if pub.venue %}<p class="pub-venue">{{ pub.venue }}</p>{% endif %}
-  {% if pub.excerpt %}<p class="pub-excerpt">{{ pub.excerpt | strip_html }}</p>{% endif %}
-  {% assign has_actions = false %}
-  {% if pub.arxivurl and pub.arxivurl != "" %}{% assign has_actions = true %}{% endif %}
-  {% if pub.paperurl and pub.paperurl != "" %}{% assign has_actions = true %}{% endif %}
-  {% if pub.codeurl and pub.codeurl != "" %}{% assign has_actions = true %}{% endif %}
-  {% if pub.blogurl and pub.blogurl != "" %}{% assign has_actions = true %}{% endif %}
-  {% if has_actions %}
   <p class="pub-actions">
-    {% if pub.arxivurl and pub.arxivurl != "" %}<a class="pub-action" href="{{ pub.arxivurl }}" rel="noopener">arXiv</a>{% endif %}
-    {% if pub.paperurl and pub.paperurl != "" %}<a class="pub-action" href="{{ pub.paperurl }}" rel="noopener">Paper</a>{% endif %}
-    {% if pub.codeurl and pub.codeurl != "" %}<a class="pub-action" href="{{ pub.codeurl }}" rel="noopener">Code</a>{% endif %}
+    {% if pub.paperurl and pub.paperurl != "" %}
+    <a class="pub-action pub-action--journal" href="{{ pub.paperurl }}" rel="noopener">{{ journal_label }}</a>
+    {% else %}
+    <span class="pub-action pub-action--journal pub-action--disabled" aria-disabled="true" title="Not yet published">{{ journal_label }}</span>
+    {% endif %}
     {% if pub.blogurl and pub.blogurl != "" %}<a class="pub-action" href="{{ pub.blogurl }}" rel="noopener">Blog</a>{% endif %}
+    {% if pub.arxivurl and pub.arxivurl != "" %}<a class="pub-action" href="{{ pub.arxivurl }}" rel="noopener">arXiv</a>{% endif %}
   </p>
-  {% endif %}
+  {% if pub.excerpt %}<p class="pub-excerpt">{{ pub.excerpt | strip_html }}</p>{% endif %}
 </div>
   {% endfor %}
 {% else %}
