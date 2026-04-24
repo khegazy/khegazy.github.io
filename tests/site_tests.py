@@ -704,6 +704,93 @@ class AboutPageTests(unittest.TestCase):
                               f"bio paragraph should mention '{needle}'")
 
 
+class BlogArchiveTests(unittest.TestCase):
+    """The year-archive page should not render the sidebar (user asked
+    for the bio + picture + links to be removed), and each post should
+    render as a well-organized card with a thumbnail image."""
+
+    def setUp(self):
+        self.path = PAGES_DIR / "year-archive.html"
+        self.meta, self.body = parse_front_matter(self.path)
+
+    def test_sidebar_disabled(self):
+        self.assertFalse(
+            self.meta.get("author_profile"),
+            "year-archive.html should have author_profile: false — the "
+            "user asked for the bio/picture/links sidebar to be gone",
+        )
+
+    def test_full_width_overrides_present(self):
+        # Mirror the homepage pattern so the blog cards use the full
+        # content width (no 2/12 right gutter from the theme's Susy grid).
+        self.assertRegex(
+            self.body,
+            r"\.page,\s*\.page__inner-wrap,\s*\.page__content\b",
+            "year-archive.html should override .page + .page__inner-wrap "
+            "+ .page__content to full width (same pattern as about.html)",
+        )
+        self.assertRegex(
+            self.body,
+            r"#main\s*\{[^}]*max-width:\s*1100px",
+            "year-archive.html #main should be capped at 1100px (matches homepage)",
+        )
+
+    def test_card_renders_thumbnail(self):
+        # Every post should render with a thumbnail image (user explicitly
+        # asked: "Each card should have a picture as well"). The Liquid
+        # fallback chain picks post.thumbnail, then header.teaser, then
+        # header.image, then a site-wide default.
+        self.assertIn(
+            "blog-card__thumb", self.body,
+            "year-archive.html cards must include a .blog-card__thumb image wrapper",
+        )
+        self.assertRegex(
+            self.body,
+            r"post\.header\.teaser",
+            "year-archive.html should resolve post.header.teaser into the "
+            "card thumbnail (Minimal Mistakes convention our posts use)",
+        )
+        self.assertRegex(
+            self.body,
+            r'<img\s+src="\{\{\s*thumb_url\s*\}\}"',
+            "year-archive.html should render the resolved thumbnail URL "
+            "in the card's <img> tag",
+        )
+
+    def test_card_has_title_date_excerpt(self):
+        # A "well-organized card" has title, date, and excerpt.
+        for hook, purpose in (
+            ("blog-card__title", "card title"),
+            ("blog-card__date", "published-on date"),
+            ("blog-card__excerpt", "card excerpt"),
+        ):
+            with self.subTest(element=hook):
+                self.assertIn(
+                    hook, self.body,
+                    f"year-archive.html card missing {purpose} ({hook})",
+                )
+
+    def test_card_is_clickable(self):
+        # The title anchor uses a "stretched link" so the whole card is
+        # a click target.
+        self.assertRegex(
+            self.body,
+            r"\.blog-card__title\s+a::after\s*\{[^}]*position:\s*absolute",
+            "year-archive.html cards should use a stretched link via "
+            ".blog-card__title a::after so the whole card is clickable",
+        )
+
+    def test_no_theme_archive_single_include(self):
+        # The old layout used the theme's archive-single include, which
+        # doesn't render a card with an image and pulled in unwanted
+        # layout (read-time, citation blocks). We now render cards inline.
+        self.assertNotIn(
+            "include archive-single.html", self.body,
+            "year-archive.html should render custom blog cards inline, "
+            "not re-use the theme's archive-single.html include",
+        )
+
+
 class ConfigTests(unittest.TestCase):
     def setUp(self):
         self.cfg = load_config()
