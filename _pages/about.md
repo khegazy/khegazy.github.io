@@ -18,7 +18,41 @@ redirect_from:
 }
 .page__content h1:first-of-type { margin-top: 1em; }
 
-/* Publication / blog cards */
+/* Clickable publication card (title / authors / venue) */
+.pub-link-card {
+  display: block;
+  text-decoration: none !important;
+  color: inherit;
+  border: 1px solid #e5e5e5;
+  border-radius: 6px;
+  padding: 0.9rem 1.15rem;
+  margin: 0.7rem 0;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.pub-link-card:hover {
+  background: #fafafa;
+  border-color: #c9c9c9;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  text-decoration: none;
+}
+.pub-link-card h4 {
+  margin: 0 0 0.3em 0;
+  font-weight: 600;
+  color: #222;
+}
+.pub-link-card .pub-authors {
+  margin: 0.1em 0;
+  font-size: 0.95em;
+  color: #444;
+}
+.pub-link-card .pub-venue {
+  margin: 0.1em 0;
+  font-size: 0.9em;
+  color: #666;
+  font-style: italic;
+}
+
+/* Blog card (still uses thumbnail layout) */
 .pub-card {
   display: flex;
   gap: 1.25rem;
@@ -34,10 +68,7 @@ redirect_from:
 .pub-card .pub-body { flex: 1; min-width: 0; }
 .pub-card h4 { margin: 0 0 0.35em 0; font-weight: 600; }
 .pub-card .pub-excerpt { color: #444; font-style: italic; margin: 0.25em 0 0.5em 0; }
-.pub-card .pub-authors { margin: 0.15em 0; font-size: 0.95em; }
 .pub-card .pub-venue { margin: 0.15em 0; font-size: 0.95em; color: #555; }
-.pub-card .pub-venue a { text-decoration: none; }
-.pub-sep { border: 0; border-top: 1px solid #eee; margin: 1.5rem 0; }
 
 .empty-state {
   color: #777;
@@ -69,23 +100,16 @@ I am broadly interested in the intersection of physics and machine learning. My 
 {% assign featured_pubs = site.publications | where: "featured", true | sort: "date" | reverse %}
 {% if featured_pubs.size > 0 %}
   {% for pub in featured_pubs %}
-<div class="pub-card">
-  {% if pub.thumbnail %}
-  <img class="pub-thumb" src="{{ pub.thumbnail | relative_url }}" alt="{{ pub.title | strip_html }}" onerror="this.style.display='none'"/>
-  {% endif %}
-  <div class="pub-body">
-    <h4><a href="{{ pub.permalink | relative_url }}">{{ pub.title }}</a></h4>
-    {% if pub.excerpt %}<p class="pub-excerpt">{{ pub.excerpt }}</p>{% endif %}
-    {% if pub.authors %}<p class="pub-authors">{{ pub.authors }}</p>{% endif %}
-    <p class="pub-venue">
-      {{ pub.venue }}{% if pub.date %}, {{ pub.date | date: "%Y" }}{% endif %}
-      {% if pub.paperurl and pub.paperurl != "" %} &nbsp;[<a href="{{ pub.paperurl }}">Paper</a>]{% endif %}
-      {% if pub.codeurl and pub.codeurl != "" %} [<a href="{{ pub.codeurl }}">Code</a>]{% endif %}
-      {% if pub.blogurl and pub.blogurl != "" %} [<a href="{{ pub.blogurl }}">Blog</a>]{% endif %}
-    </p>
-  </div>
-</div>
-<hr class="pub-sep"/>
+    {% if pub.paperurl and pub.paperurl != "" %}
+      {% assign pub_href = pub.paperurl %}
+    {% else %}
+      {% assign pub_href = pub.permalink | relative_url %}
+    {% endif %}
+<a class="pub-link-card" href="{{ pub_href }}">
+  <h4>{{ pub.title }}</h4>
+  {% if pub.authors %}<p class="pub-authors">{{ pub.authors }}</p>{% endif %}
+  <p class="pub-venue">{{ pub.venue }}{% if pub.date %}, {{ pub.date | date: "%Y" }}{% endif %}</p>
+</a>
   {% endfor %}
 {% else %}
 <p class="empty-state">Featured publications will appear here.</p>
