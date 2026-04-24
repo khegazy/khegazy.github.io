@@ -1,0 +1,98 @@
+/* ==========================================================================
+   COLLAPSIBLE DERIVATION (<details>/<summary>)
+   --------------------------------------------------------------------------
+   Native HTML5 disclosure widget, styled to fit the academicpages theme.
+   Usage in a post (kramdown):
+
+     <details class="derivation" markdown="1">
+     <summary>Show derivation</summary>
+
+     $$ ... $$
+
+     More markdown + math here.
+
+     </details>
+
+   The `markdown="1"` attribute is required so kramdown parses the content
+   inside as markdown (math, lists, links). Without it the body is treated
+   as raw HTML and $$...$$ math will not render.
+
+   A lighter "aside" variant is also provided for short remarks:
+     <details class="aside" markdown="1"> ... </details>
+   ========================================================================== */
+
+/* Shared base rules for both variants. */
+details.derivation,
+details.aside {
+  margin: 1.25em 0;
+  padding: 0;
+  border: 1px solid $border-color;
+  border-radius: $border-radius;
+  overflow: hidden;
+
+  // Remove default disclosure triangle; we draw our own "+" / "−".
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0.55em 0.9em;
+    font-weight: 600;
+    color: $text-color;
+    user-select: none;
+    position: relative;
+
+    &::-webkit-details-marker { display: none; }
+
+    &::before {
+      content: "+";
+      display: inline-block;
+      width: 1.1em;
+      margin-right: 0.4em;
+      font-weight: 700;
+      color: $primary-color;
+      text-align: center;
+    }
+  }
+
+  &[open] > summary::before { content: "−"; }
+
+  /* Body spacing: everything except the <summary> gets inner padding. */
+  > *:not(summary) {
+    margin-left: 0.9em;
+    margin-right: 0.9em;
+  }
+  > *:not(summary):first-of-type { margin-top: 0.9em; }
+  > *:not(summary):last-child    { margin-bottom: 0.9em; }
+
+  .MathJax_Display { margin: 0.6em 0; }
+}
+
+/* Filled "derivation" variant — the default, with a tinted summary bar. */
+details.derivation {
+  background: $code-background-color;
+
+  summary {
+    background: mix($code-background-color, $primary-color, 92%);
+    border-bottom: 1px solid transparent;
+
+    &:hover { background: mix($code-background-color, $primary-color, 85%); }
+  }
+
+  &[open] > summary { border-bottom-color: $border-color; }
+}
+
+/* Lighter "aside" variant — transparent background, italic summary. */
+details.aside {
+  background: transparent;
+
+  summary {
+    background: transparent;
+    font-weight: 500;
+    font-style: italic;
+    color: $primary-color;
+    border-bottom: 1px solid transparent;
+
+    &:hover { color: darken($primary-color, 10%); }
+  }
+
+  &[open] > summary { border-bottom-color: $border-color; }
+}
