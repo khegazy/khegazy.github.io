@@ -13,7 +13,7 @@ They check:
     dissertation content
   - _config.yml author fields are populated
   - Every {{ site.author.X }} used in templates resolves to a non-empty value
-  - Internal links in about.md (e.g., /files/Resume.pdf) point to files
+  - Internal links in about.html (e.g., /files/Resume.pdf) point to files
     that exist in the repo
 
 Run:  python3 tests/site_tests.py
@@ -173,9 +173,9 @@ class FeaturedSortOrderTests(unittest.TestCase):
 
 class LiquidBalanceTests(unittest.TestCase):
     def test_about_md_tag_balance(self):
-        text = (PAGES_DIR / "about.md").read_text(encoding="utf-8")
+        text = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
         o, c = count_liquid_tags(text)
-        self.assertEqual(o, c, f"about.md has unbalanced Liquid tags: {o} opens vs {c} closes")
+        self.assertEqual(o, c, f"about.html has unbalanced Liquid tags: {o} opens vs {c} closes")
 
     def test_masthead_tag_balance(self):
         text = (INCLUDES_DIR / "masthead.html").read_text(encoding="utf-8")
@@ -195,7 +195,7 @@ class NavigationTests(unittest.TestCase):
     def test_nav_urls_resolve(self):
         # URL -> what we expect to exist in the repo
         checks = {
-            "/": PAGES_DIR / "about.md",
+            "/": PAGES_DIR / "about.html",
             "/publications/": PAGES_DIR / "publications.md",
             "/year-archive/": PAGES_DIR / "year-archive.html",
             "/files/Resume.pdf": FILES_DIR / "Resume.pdf",
@@ -203,10 +203,10 @@ class NavigationTests(unittest.TestCase):
         for item in self.main:
             url = item["url"]
             if url == "/#contact":
-                # anchor on homepage; check the anchor exists in about.md
-                about = (PAGES_DIR / "about.md").read_text(encoding="utf-8")
+                # anchor on homepage; check the anchor exists in about.html
+                about = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
                 self.assertIn('id="contact"', about,
-                              "about.md is missing the #contact anchor")
+                              "about.html is missing the #contact anchor")
                 continue
             target = checks.get(url)
             self.assertIsNotNone(target, f"Unexpected nav URL: {url}")
@@ -326,12 +326,12 @@ class MastheadTests(unittest.TestCase):
 
 class AboutPageTests(unittest.TestCase):
     def setUp(self):
-        self.text = (PAGES_DIR / "about.md").read_text(encoding="utf-8")
-        self.meta, self.body = parse_front_matter(PAGES_DIR / "about.md")
+        self.text = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
+        self.meta, self.body = parse_front_matter(PAGES_DIR / "about.html")
 
     def test_permalink_is_root(self):
         self.assertEqual(self.meta.get("permalink"), "/",
-                         "about.md permalink should be '/'")
+                         "about.html permalink should be '/'")
 
     def test_author_profile_disabled(self):
         # The homepage was redesigned: the bio + photo now live inline in a
@@ -339,7 +339,7 @@ class AboutPageTests(unittest.TestCase):
         # therefore be OFF on the homepage.
         self.assertFalse(
             self.meta.get("author_profile"),
-            "about.md should have author_profile: false — the homepage uses "
+            "about.html should have author_profile: false — the homepage uses "
             "an inline hero section instead of the sticky author sidebar",
         )
 
@@ -348,23 +348,23 @@ class AboutPageTests(unittest.TestCase):
         classes = self.meta.get("classes")
         if isinstance(classes, list):
             self.assertIn("wide-page", classes,
-                          "about.md should include 'wide-page' in classes: list")
+                          "about.html should include 'wide-page' in classes: list")
         else:
             self.assertEqual(classes, "wide-page",
-                             "about.md classes: should be 'wide-page' (full-width layout)")
+                             "about.html classes: should be 'wide-page' (full-width layout)")
 
     def test_hero_section_present(self):
         self.assertRegex(
             self.body,
             r'<section\s+class="hero"',
-            "about.md should have a <section class='hero'> containing bio + photo",
+            "about.html should have a <section class='hero'> containing bio + photo",
         )
 
     def test_hero_image_references_profile(self):
         self.assertRegex(
             self.body,
             r'<img\s+class="hero__image"[^>]*profile\.png',
-            "about.md hero should include an <img class='hero__image'> pointing at profile.png",
+            "about.html hero should include an <img class='hero__image'> pointing at profile.png",
         )
 
     def test_hero_image_precedes_hero_text(self):
@@ -388,7 +388,7 @@ class AboutPageTests(unittest.TestCase):
         self.assertNotRegex(
             self.body,
             r"flex-direction:\s*column-reverse",
-            "about.md @media block must use flex-direction: column "
+            "about.html @media block must use flex-direction: column "
             "(not column-reverse) so the photo stays above the bio on mobile",
         )
 
@@ -399,7 +399,7 @@ class AboutPageTests(unittest.TestCase):
         self.assertRegex(
             self.body,
             r"\.page__title\s*\{[^}]*display:\s*none",
-            "about.md should hide the theme's duplicate .page__title heading",
+            "about.html should hide the theme's duplicate .page__title heading",
         )
 
     def test_content_area_widened_on_homepage(self):
@@ -409,17 +409,26 @@ class AboutPageTests(unittest.TestCase):
         # .page__content to full width / no margin / no padding so every
         # child of .page__content (hero, h1, pub cards, contact block)
         # shares the same left/right edges.
+        # The selector list now also targets .home and its direct children
+        # as a defense-in-depth against Susy gutters leaking through any
+        # inner wrapper — but .page, .page__inner-wrap, .page__content
+        # must be the FIRST three selectors so the core wrappers are
+        # guaranteed to be reset.
         self.assertRegex(
             self.body,
-            r"\.page,\s*\.page__inner-wrap,\s*\.page__content\s*\{[^}]*width:\s*100%",
-            "about.md should override .page, .page__inner-wrap, and "
-            ".page__content to width: 100% together — otherwise one of them "
-            "keeps the theme's Susy gutter and shifts content rightward",
+            r"\.page,\s*\.page__inner-wrap,\s*\.page__content\b",
+            "about.html should list .page, .page__inner-wrap, and "
+            ".page__content together in the width/margin/padding override",
         )
         self.assertRegex(
             self.body,
-            r"\.page,\s*\.page__inner-wrap,\s*\.page__content\s*\{[^}]*float:\s*none",
-            "about.md width override should also reset float: none",
+            r"\.page,[^{]*\{[^}]*width:\s*100%",
+            "about.html .page override should set width: 100%",
+        )
+        self.assertRegex(
+            self.body,
+            r"\.page,[^{]*\{[^}]*float:\s*none",
+            "about.html .page override should also reset float: none",
         )
 
     def test_main_centered_with_consistent_padding(self):
@@ -428,13 +437,13 @@ class AboutPageTests(unittest.TestCase):
         self.assertRegex(
             self.body,
             r"#main\s*\{[^}]*margin-left:\s*auto",
-            "about.md #main override should set margin-left: auto so the "
+            "about.html #main override should set margin-left: auto so the "
             "capped content is horizontally centered",
         )
         self.assertRegex(
             self.body,
             r"#main\s*\{[^}]*margin-right:\s*auto",
-            "about.md #main override should set margin-right: auto",
+            "about.html #main override should set margin-right: auto",
         )
 
     def test_hero_image_is_rectangular(self):
@@ -443,13 +452,13 @@ class AboutPageTests(unittest.TestCase):
         self.assertNotRegex(
             self.body,
             r"\.hero__image\s*\{[^}]*border-radius:\s*50%",
-            "about.md .hero__image should NOT use border-radius: 50% — "
+            "about.html .hero__image should NOT use border-radius: 50% — "
             "the user wants the full rectangular image, not a circular crop",
         )
         self.assertNotRegex(
             self.body,
             r"\.hero__image\s*\{[^}]*object-fit:\s*cover",
-            "about.md .hero__image should NOT use object-fit: cover — "
+            "about.html .hero__image should NOT use object-fit: cover — "
             "the user wants the full rectangular image without cropping",
         )
 
@@ -459,57 +468,64 @@ class AboutPageTests(unittest.TestCase):
         self.assertRegex(
             self.body,
             r"\.hero\s*\{[^}]*align-items:\s*center",
-            "about.md .hero should use align-items: center so the photo "
+            "about.html .hero should use align-items: center so the photo "
             "is vertically aligned with the midpoint of the bio text",
         )
         self.assertNotRegex(
             self.body,
             r"\.hero\s*\{[^}]*align-items:\s*flex-start",
-            "about.md .hero should NOT use align-items: flex-start — that "
+            "about.html .hero should NOT use align-items: flex-start — that "
             "anchors the photo to the top of the text, which looks awkward",
         )
 
     def test_hero_has_name_and_subtitle(self):
         self.assertIn('class="hero__name"', self.body,
-                      "about.md hero should render a .hero__name element")
+                      "about.html hero should render a .hero__name element")
         self.assertIn('class="hero__subtitle"', self.body,
-                      "about.md hero should render a .hero__subtitle element (role/affiliations)")
+                      "about.html hero should render a .hero__subtitle element (role/affiliations)")
 
-    def test_hero_bio_uses_markdown_processing(self):
-        # hero__bio has markdown="1" so inline links render — regression
-        # guard against accidentally setting markdown="0" which would break
-        # the collaborator links.
-        self.assertRegex(
-            self.body,
-            r'class="hero__bio"[^>]*markdown="1"',
-            "about.md .hero__bio should have markdown=\"1\" so inline links render",
-        )
+    def test_hero_bio_contains_collaborator_links(self):
+        # The page is now .html (not .md) so the bio uses explicit <a>
+        # tags instead of markdown [text](url). Regression guard that the
+        # key collaborator links are still present and well-formed.
+        for needle in (
+            'statistics.berkeley.edu',      # UC Berkeley
+            'lbl.gov',                       # LBL
+            'icsi.berkeley.edu',             # ICSI
+            'mmahoney',                      # Michael Mahoney
+            'benerichson.com',               # Ben Erichson
+            'philip-bucksbaum',              # Phil Bucksbaum
+            'ryan-coffee',                   # Ryan Coffee
+        ):
+            with self.subTest(link=needle):
+                self.assertIn(needle, self.body,
+                              f"about.html .hero__bio should include a link to {needle}")
 
     def test_required_sections(self):
         for heading in ("Selected Publications", "Selected Blogs",
                         "Curriculum Vitae", "Get in touch"):
             with self.subTest(heading=heading):
                 self.assertIn(heading, self.body,
-                              f"about.md missing required section: {heading}")
+                              f"about.html missing required section: {heading}")
 
     def test_no_dissertation_content(self):
         # User asked to remove dissertation-related content from the bio.
         self.assertNotRegex(self.body, r"(?i)\bdissertation\b",
-                            "about.md still references 'dissertation' — the user asked to remove this")
+                            "about.html still references 'dissertation' — the user asked to remove this")
 
     def test_featured_pub_liquid_loop(self):
         # Exact filter chain we committed: where featured true, sort date, reverse
         self.assertRegex(
             self.body,
             r'site\.publications\s*\|\s*where:\s*"featured",\s*true\s*\|\s*sort:\s*"date"\s*\|\s*reverse',
-            "about.md is missing the featured-publications filter chain",
+            "about.html is missing the featured-publications filter chain",
         )
 
     def test_featured_posts_liquid_loop(self):
         self.assertRegex(
             self.body,
             r'site\.posts\s*\|\s*where:\s*"featured",\s*true',
-            "about.md is missing the featured-posts filter chain",
+            "about.html is missing the featured-posts filter chain",
         )
 
     def test_pub_card_renders_excerpt(self):
@@ -553,7 +569,7 @@ class AboutPageTests(unittest.TestCase):
                 self.assertRegex(
                     self.body,
                     rf'pub\.{field}.*{label}',
-                    f"about.md should render a '{label}' action button from pub.{field}",
+                    f"about.html should render a '{label}' action button from pub.{field}",
                 )
 
     def test_pub_action_buttons_above_stretched_link(self):
@@ -562,7 +578,7 @@ class AboutPageTests(unittest.TestCase):
         self.assertRegex(
             self.body,
             r"\.pub-actions\s*\{[^}]*z-index:\s*2",
-            "about.md .pub-actions must have z-index: 2 so buttons sit above "
+            "about.html .pub-actions must have z-index: 2 so buttons sit above "
             "the stretched title link overlay",
         )
 
@@ -570,11 +586,11 @@ class AboutPageTests(unittest.TestCase):
         # The card title's href should fall back:
         #   paperurl → arxivurl → permalink
         self.assertIn("pub.paperurl", self.body,
-                      "about.md pub card link should prefer pub.paperurl")
+                      "about.html pub card link should prefer pub.paperurl")
         self.assertIn("pub.arxivurl", self.body,
-                      "about.md pub card link should fall back to pub.arxivurl")
+                      "about.html pub card link should fall back to pub.arxivurl")
         self.assertIn("pub.permalink", self.body,
-                      "about.md pub card link should ultimately fall back to pub.permalink")
+                      "about.html pub card link should ultimately fall back to pub.permalink")
 
     def test_no_auto_year_append_in_venue_line(self):
         # Earlier version appended ", {{ pub.date | date: '%Y' }}" to the
@@ -583,16 +599,16 @@ class AboutPageTests(unittest.TestCase):
         self.assertNotRegex(
             self.body,
             r'\{\{\s*pub\.venue\s*\}\}[^<]*\{\%\s*if\s+pub\.date',
-            "about.md should not auto-append the year to the venue line",
+            "about.html should not auto-append the year to the venue line",
         )
 
     def test_cv_download_link(self):
         self.assertIn("/files/Resume.pdf", self.body,
-                      "about.md is missing the CV download link")
+                      "about.html is missing the CV download link")
 
     def test_contact_email_uses_site_author(self):
         self.assertIn("{{ site.author.email }}", self.body,
-                      "about.md contact should use {{ site.author.email }}")
+                      "about.html contact should use {{ site.author.email }}")
 
     def test_bio_paragraph_has_key_affiliations(self):
         # After the rewrite, the short bio should still name these.
@@ -654,11 +670,11 @@ class SiteAuthorReferenceResolutionTests(unittest.TestCase):
                 )
 
     def test_about_refs_resolve(self):
-        for field in self._collect_refs(PAGES_DIR / "about.md"):
+        for field in self._collect_refs(PAGES_DIR / "about.html"):
             with self.subTest(field=field):
                 self.assertTrue(
                     self.author.get(field),
-                    f"about.md uses site.author.{field} but it's empty in _config.yml",
+                    f"about.html uses site.author.{field} but it's empty in _config.yml",
                 )
 
 
@@ -799,11 +815,11 @@ class EmptyStatesTests(unittest.TestCase):
         self.assertFalse(leftover, f"Placeholder posts still present: {leftover}")
 
     def test_empty_state_fallback_present(self):
-        text = (PAGES_DIR / "about.md").read_text(encoding="utf-8")
+        text = (PAGES_DIR / "about.html").read_text(encoding="utf-8")
         # We included an "empty-state" <p> in both the pubs and blogs loops.
         self.assertGreaterEqual(
             text.count("empty-state"), 2,
-            "about.md should render an empty-state fallback for both "
+            "about.html should render an empty-state fallback for both "
             "publications and blogs loops",
         )
 

@@ -19,7 +19,9 @@ redirect_from:
      the hero, h1, pub cards, contact block — then shares the same left
      and right edges, so margins feel even everywhere on the page.
    - Keep #main centered and cap it at 1100px with consistent horizontal
-     padding on both sides.
+     padding on both sides. home-section is a full-width block wrapper
+     around each section so cards and headings can't inherit unexpected
+     widths from sibling containers.
    ------------------------------------------------------------------ */
 .page__title { display: none; }
 #main {
@@ -31,7 +33,9 @@ redirect_from:
 }
 .page,
 .page__inner-wrap,
-.page__content {
+.page__content,
+.page__content > .home,
+.page__content > .home > * {
   float: none !important;
   width: 100% !important;
   max-width: 100% !important;
@@ -39,7 +43,10 @@ redirect_from:
   margin-right: 0 !important;
   padding-left: 0 !important;
   padding-right: 0 !important;
+  box-sizing: border-box;
 }
+.home { display: block; width: 100%; }
+.home > * { clear: both; }
 
 /* ------------------------------------------------------------------
    Homepage hero (photo left, bio right — vertically centered)
@@ -49,6 +56,7 @@ redirect_from:
   align-items: center;
   gap: 2rem;
   margin: 0.5em 0 2em 0;
+  width: 100%;
 }
 .hero__image {
   flex: 0 0 auto;
@@ -57,6 +65,7 @@ redirect_from:
   border: 1px solid #e5e5e5;
   border-radius: 4px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  float: none !important;
 }
 .hero__text { flex: 1 1 auto; min-width: 0; }
 .hero__name {
@@ -73,6 +82,7 @@ redirect_from:
 }
 .hero__bio { font-size: 1em; line-height: 1.6; }
 .hero__bio p { margin: 0 0 0.9em 0; }
+.hero__bio p:last-child { margin-bottom: 0; }
 @media (max-width: 700px) {
   .hero { flex-direction: column; align-items: center; text-align: left; }
   .hero__image { width: 200px; height: auto; }
@@ -83,18 +93,22 @@ redirect_from:
 /* ------------------------------------------------------------------
    Section headings on the homepage
    ------------------------------------------------------------------ */
-.page__content h1,
-.page__content h2 {
+.home h1 {
   margin-top: 2.25em;
   padding-bottom: 0.25em;
   border-bottom: 1px solid #eee;
+  clear: both;
 }
 
 /* ------------------------------------------------------------------
    Clickable publication card — title / authors / venue / description
    ------------------------------------------------------------------ */
+.pubs-list { width: 100%; }
 .pub-link-card {
   position: relative;
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   border: 1px solid #e5e5e5;
   border-radius: 6px;
   padding: 0.9rem 1.15rem 0.75rem 1.15rem;
@@ -172,7 +186,7 @@ redirect_from:
 /* ------------------------------------------------------------------
    Blog card (with thumbnail)
    ------------------------------------------------------------------ */
-.pub-card { display: flex; gap: 1.25rem; align-items: flex-start; margin: 1.25rem 0; }
+.pub-card { display: flex; gap: 1.25rem; align-items: flex-start; margin: 1.25rem 0; width: 100%; }
 .pub-card .pub-thumb { width: 180px; max-width: 30%; flex-shrink: 0; border-radius: 4px; }
 .pub-card .pub-body { flex: 1; min-width: 0; }
 .pub-card h4 { margin: 0 0 0.35em 0; font-weight: 600; }
@@ -187,15 +201,16 @@ redirect_from:
 }
 </style>
 
+<div class="home">
+
 <section class="hero">
   <img class="hero__image" src="{{ '/images/profile.png' | relative_url }}" alt="Kareem Hegazy"/>
   <div class="hero__text">
     <h1 class="hero__name">Kareem Hegazy</h1>
-    <p class="hero__subtitle">Postdoctoral Researcher · UC Berkeley · Lawrence Berkeley National Lab · ICSI</p>
-    <div class="hero__bio" markdown="1">
-I am a postdoctoral researcher at [UC Berkeley](https://statistics.berkeley.edu/), [Lawrence Berkeley National Lab](https://www.lbl.gov/), and [ICSI](https://www.icsi.berkeley.edu/icsi/), working with [Michael Mahoney](https://www.stat.berkeley.edu/~mmahoney/) and [Benjamin Erichson](https://www.benerichson.com/) at the intersection of Physics, Chemistry, and AI. I received my Physics PhD from Stanford in 2023 under [Phil Bucksbaum](https://physics.stanford.edu/people/philip-bucksbaum) and [Ryan Coffee](https://profiles.stanford.edu/ryan-coffee), where I studied excited-state quantum molecular dynamics through [ultrafast gas-phase diffraction](https://lcls.slac.stanford.edu/instruments/mev-ued). In summer 2019 I was an AI Research Fellow at Google X on the [Blueshift team](https://research.google/teams/blueshift/). I previously earned an Honors B.Sc. in Physics and Math from the University of Michigan, where I researched the Higgs Boson at CERN with [Bing Zhou](https://lsa.umich.edu/physics/people/faculty/bzhou.html).
-
-I am broadly interested in the intersection of physics and machine learning — LLMs for time series, ML for thermodynamic processes and PDE modeling, ML chemical potentials, and inverse problems.
+    <p class="hero__subtitle">Postdoctoral Researcher &middot; UC Berkeley &middot; Lawrence Berkeley National Lab &middot; ICSI</p>
+    <div class="hero__bio">
+      <p>I am a postdoctoral researcher at <a href="https://statistics.berkeley.edu/">UC Berkeley</a>, <a href="https://www.lbl.gov/">Lawrence Berkeley National Lab</a>, and <a href="https://www.icsi.berkeley.edu/icsi/">ICSI</a>, working with <a href="https://www.stat.berkeley.edu/~mmahoney/">Michael Mahoney</a> and <a href="https://www.benerichson.com/">Benjamin Erichson</a> at the intersection of Physics, Chemistry, and AI. I received my Physics PhD from Stanford in 2023 under <a href="https://physics.stanford.edu/people/philip-bucksbaum">Phil Bucksbaum</a> and <a href="https://profiles.stanford.edu/ryan-coffee">Ryan Coffee</a>, where I studied excited-state quantum molecular dynamics through <a href="https://lcls.slac.stanford.edu/instruments/mev-ued">ultrafast gas-phase diffraction</a>. In summer 2019 I was an AI Research Fellow at Google X on the <a href="https://research.google/teams/blueshift/">Blueshift team</a>. I previously earned an Honors B.Sc. in Physics and Math from the University of Michigan, where I researched the Higgs Boson at CERN with <a href="https://lsa.umich.edu/physics/people/faculty/bzhou.html">Bing Zhou</a>.</p>
+      <p>I am broadly interested in the intersection of physics and machine learning &mdash; LLMs for time series, ML for thermodynamic processes and PDE modeling, ML chemical potentials, and inverse problems.</p>
     </div>
   </div>
 </section>
@@ -213,7 +228,7 @@ I am broadly interested in the intersection of physics and machine learning — 
     {% else %}
       {% assign pub_href = pub.permalink | relative_url %}
     {% endif %}
-<div class="pub-link-card" markdown="0">
+<div class="pub-link-card">
   <h4 class="pub-title"><a href="{{ pub_href }}">{{ pub.title }}</a></h4>
   {% if pub.authors %}<p class="pub-authors">{{ pub.authors }}</p>{% endif %}
   {% if pub.venue %}<p class="pub-venue">{{ pub.venue }}</p>{% endif %}
@@ -271,8 +286,10 @@ I am broadly interested in the intersection of physics and machine learning — 
 
 <p>
   Email: <a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a><br/>
-  <a href="https://github.com/{{ site.author.github }}">GitHub</a> &nbsp;·&nbsp;
-  <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}">LinkedIn</a> &nbsp;·&nbsp;
-  <a href="https://twitter.com/{{ site.author.twitter }}">Twitter</a> &nbsp;·&nbsp;
+  <a href="https://github.com/{{ site.author.github }}">GitHub</a> &nbsp;&middot;&nbsp;
+  <a href="https://www.linkedin.com/in/{{ site.author.linkedin }}">LinkedIn</a> &nbsp;&middot;&nbsp;
+  <a href="https://twitter.com/{{ site.author.twitter }}">Twitter</a> &nbsp;&middot;&nbsp;
   <a href="{{ site.author.googlescholar }}">Google Scholar</a>
 </p>
+
+</div>
