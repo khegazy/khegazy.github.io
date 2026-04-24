@@ -170,6 +170,7 @@ class FeaturedSortOrderTests(unittest.TestCase):
         "2026-06-01-neurde.md",
         "2026-05-01-powerformer.md",
         "2026-04-21-zero-shot-super-resolution.md",
+        "2025-10-22-foundation-models-chemical-space.md",
         "2023-10-01-bayesian-inference-gas-diffraction.md",
         "2021-10-08-conformer-specific-photochemistry.md",
         "2019-06-01-cyclohexadiene-ring-opening.md",
